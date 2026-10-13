@@ -85,6 +85,6 @@ git add results/data_check.csv ; git commit -m "Phase 1 data check" ; git push
 Then: Phase 2 — SINet-V2 wrapper (Claude), weights via `python scripts/download_data.py --weights sinet_v2`.
 
 ### Open problems
-- Push from the cloud container failed (403: Claude GitHub App not installed / not connected for `Neel-Ronak-Org/VFM-CV`).
+- ~~Push from the cloud container failed (403)~~ — resolved: GitHub access fixed, branch pushed 2026-10-13.
 - Exact archive layout of the SINet-V2 Drive packages is not verified (organiser handles common variants; check the `--verify` output).
 - Rain is not comparable with COD10K-C (our approximation).
