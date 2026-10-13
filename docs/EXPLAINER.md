@@ -96,4 +96,24 @@ Old baselines were written for PyTorch 1.x. We copy their network code unchanged
 
 `scripts/make_reproduction.py` puts both comparisons in `results/reproduction.csv`.
 
-*(Sections on the SAM family, adapters, the consistency loss and efficiency metrics are added in Phases 2–5.)*
+## 7. The baselines and why each is in the benchmark
+
+| Model | Family | Backbone (params) | Input | Why it's here |
+|---|---|---|---|---|
+| SINet-V2 (TPAMI'22) | specialist | Res2Net-50 (27M) | 352 | the standard reference; in COD10K-C |
+| PFNet (CVPR'21) | specialist | ResNet-50 (46.5M) | 416 | in COD10K-C |
+| ZoomNet (CVPR'22) | specialist | ResNet-50, 3 input scales (32.4M) | 192/384/576 | in COD10K-C; multi-scale input may change its blur robustness |
+| FEDER (CVPR'23) | specialist | ResNet-50 + learnable wavelets (44.1M) | 384 | a *frequency-based* method; blur and noise attack exactly the frequencies it relies on |
+| SAM-Adapter (ICCVW'23) | SAM-based | SAM ViT (B/L/H, detected from checkpoint) + adapters | 1024 | the original "adapt SAM to COD" model |
+| SAM2-UNet (2024) | SAM2-based | SAM2 Hiera-L, frozen + adapters (216M) | 352 | our SAM2 representative (SAM2-/SAM3-Adapter released no COD weights) |
+| Oracle-Box MobileSAM | SAM, **oracle** | TinyViT (10M) | 1024 | an upper bound, *not* a competitor (see below) |
+
+**Two ways a model can post-process its output, and why it matters for robustness.** SINet-V2, FEDER and SAM2-UNet min-max normalise every map (§5). ZoomNet, PFNet and SAM-Adapter output the raw sigmoid. We keep each model's *official* choice so the clean numbers reproduce, and we report which one each uses. Min-max can hide a model's uncertainty under heavy corruption, so the paper should mention it whenever a min-max model looks surprisingly robust.
+
+**Training-data note:** most baselines train on COD10K-train + CAMO-train (4,040 images). FEDER's README says COD10K-train only (3,040 images). The paper's baseline table should say so.
+
+**The oracle (zero-shot MobileSAM with the ground-truth box).** We give SAM a box drawn around the true object, so it only has to *outline* the object, not *find* it. No real detector has that box, which is why it is labelled "oracle, not a fair competitor". It answers two useful questions:
+1. How much of COD's difficulty is *finding* the object rather than *segmenting* it? The gap between the oracle and the real models measures this.
+2. Does corruption hurt SAM's *segmentation* even when the location is given? If the oracle stays robust while SAM-based COD models drop, the weakness lies in localisation.
+
+*(Sections on our adapter, the consistency loss and efficiency metrics are added in Phases 4–5.)*

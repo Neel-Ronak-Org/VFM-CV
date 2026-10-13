@@ -8,6 +8,13 @@ import importlib
 REGISTRY = {
     "debug-centre": "src.models.base:_Constant",
     "SINet-V2": "src.models.sinet_v2:SINetV2",
+    "SAM2-UNet": "src.models.sam2_unet:SAM2UNet",
+    "ZoomNet": "src.models.zoomnet:ZoomNet",
+    "PFNet": "src.models.pfnet:PFNet",
+    "FEDER": "src.models.feder:FEDER",
+    "SAM-Adapter": "src.models.sam_adapter:SAMAdapter",
+    # Analysis only -- uses the ground-truth box, NOT a fair competitor:
+    "Oracle-Box-MobileSAM": "src.models.oracle_box_sam:OracleBoxMobileSAM",
 }
 
 

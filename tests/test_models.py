@@ -48,3 +48,62 @@ def test_registry():
     assert m.predict(np.zeros((40, 60, 3), np.uint8)).shape == (40, 60)
     with pytest.raises(KeyError):
         build_model("nope")
+
+
+# ---- every baseline wrapper: random init on CPU, predict contract + architecture size ----------
+BASELINES = [  # (class path, kwargs for random init, expected parameter range in millions)
+    ("src.models.sam2_unet:SAM2UNet", {"weights": None}, (216, 217)),         # Hiera-L + adapters + decoder
+    ("src.models.zoomnet:ZoomNet", {"weights": None}, (32.3, 32.5)),          # paper: 32.38M
+    ("src.models.pfnet:PFNet", {"weights": None}, (46.4, 46.6)),              # paper: 46.50M
+    ("src.models.feder:FEDER", {"weights": None}, (44.0, 44.3)),
+    ("src.models.sam_adapter:SAMAdapter", {"weights": None, "embed_dim": 768}, (93, 95)),  # ViT-B variant
+]
+
+
+def _cls(path):
+    import importlib
+    mod, name = path.split(":")
+    return getattr(importlib.import_module(mod), name)
+
+
+@pytest.mark.parametrize("path,kw,prange", BASELINES, ids=[b[0].split(":")[1] for b in BASELINES])
+def test_baseline_wrapper_contract(path, kw, prange):
+    torch.manual_seed(0)
+    m = _cls(path)(device="cpu", **kw)
+    net = m.net
+    n = sum(p.numel() for p in net.parameters()) / 1e6
+    assert prange[0] <= n <= prange[1], n
+    img = np.random.default_rng(0).integers(0, 256, (90, 130, 3), dtype=np.uint8)
+    pred = m.predict(img)
+    assert pred.shape == (90, 130) and pred.dtype == np.float32
+    assert 0.0 <= pred.min() and pred.max() <= 1.0 and np.isfinite(pred).all()
+
+
+def test_oracle_box_sam_uses_gt_and_refuses_without_it():
+    from src.models.oracle_box_sam import OracleBoxMobileSAM, gt_box
+    m = OracleBoxMobileSAM(weights=None, device="cpu")
+    assert m.needs_gt and m.name.startswith("Oracle")
+    img = np.random.default_rng(0).integers(0, 256, (64, 96, 3), dtype=np.uint8)
+    with pytest.raises(RuntimeError):
+        m.predict(img)
+    gt = np.zeros((32, 48), bool)
+    gt[8:16, 12:24] = True
+    assert gt_box(gt, (64, 96)).tolist() == [24.0, 16.0, 48.0, 32.0]   # scaled to image size
+    m.set_gt(gt)
+    assert m.predict(img).shape == (64, 96)
+    m.set_gt(np.zeros((64, 96), bool))
+    assert m.predict(img).max() == 0.0                                   # empty mask -> empty map
+
+
+def test_registry_lists_all_baselines():
+    from src.models import REGISTRY
+    for name in ("SINet-V2", "SAM2-UNet", "ZoomNet", "PFNet", "FEDER", "SAM-Adapter", "Oracle-Box-MobileSAM"):
+        assert name in REGISTRY
+
+
+def test_sam_adapter_detects_backbone_from_checkpoint(tmp_path):
+    from src.models.sam_adapter import SAMAdapter
+    src = SAMAdapter(weights=None, embed_dim=768, device="cpu")
+    torch.save({"module." + k: v for k, v in src.net.state_dict().items()}, tmp_path / "sa.pth")
+    m = SAMAdapter(weights=tmp_path / "sa.pth", device="cpu")
+    assert m.variant == "ViT-B"

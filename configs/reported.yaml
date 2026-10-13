@@ -13,3 +13,40 @@ SINet-V2:
     - https://arxiv.org/pdf/2110.15606
     - https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
   Sm: {CHAMELEON: 0.888, CAMO: 0.820, COD10K: 0.815, NC4K: 0.847}
+
+SAM2-UNet:
+  source: >-
+    Xiong et al., SAM2-UNet, arXiv:2408.08870, Tables 2 (CHAMELEON, CAMO) and 3 (COD10K, NC4K).
+  verified_urls:
+    - https://arxiv.org/html/2408.08870
+  Sm: {CHAMELEON: 0.914, CAMO: 0.884, COD10K: 0.880, NC4K: 0.901}
+
+ZoomNet:
+  source: >-
+    Pang et al., ZoomNet, CVPR 2022 (ResNet-50). CHAMELEON/CAMO/COD10K S-alpha confirmed in the
+    COD survey arXiv:2408.14562 (Table, ZoomNet row). NC4K value not yet confirmed -> omitted.
+  verified_urls:
+    - https://arxiv.org/html/2408.14562v1
+    - https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
+  Sm: {CHAMELEON: 0.902, CAMO: 0.820, COD10K: 0.838}
+
+PFNet:
+  source: >-
+    Mei et al., PFNet, CVPR 2021 (ResNet-50). S-alpha from the comparison table in
+    "Edge-Guided Camouflaged Object Detection via Multi-Level Feature Integration" (PMC10346819),
+    PFNet row. Single secondary source; NC4K not reported in the PFNet paper -> omitted.
+  verified_urls:
+    - https://pmc.ncbi.nlm.nih.gov/articles/PMC10346819/
+  Sm: {CHAMELEON: 0.882, CAMO: 0.782, COD10K: 0.800}
+
+# FEDER: published S-alpha not confirmed (sources disagree; the paper has ResNet-50 and Res2Net
+# variants). Its port is checked against the officially released prediction maps instead.
+
+SAM-Adapter:
+  source: >-
+    Chen et al., SAM-Adapter, ICCVW 2023 (ViT-H per the README). S-alpha as listed in the SAM2-Adapter
+    paper's comparison table (SAM-Adapter row). Computed by the authors at 1024x1024 with their own
+    metric code, so a small protocol gap is expected (see src/models/sam_adapter.py).
+  verified_urls:
+    - https://arxiv.org/pdf/2408.04579
+  Sm: {CHAMELEON: 0.896, CAMO: 0.847, COD10K: 0.883}

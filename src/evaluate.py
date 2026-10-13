@@ -77,6 +77,8 @@ def evaluate_condition(model, ds: CODDataset, corruption: str, severity: int, ba
     for i in tqdm(range(n), desc=f"{model.name}|{ds.name}|{corruption}-{severity}", leave=False):
         name, img, gt = ds[i]
         img = corrupt_for_benchmark(img, ds.name, name, corruption, severity, base_seed)
+        if model.needs_gt:
+            model.set_gt(gt)
         pred = model.predict(img)
         if pred.shape != gt.shape:
             # A few test images (2 in CHAMELEON) differ in size from their mask. Standard COD

@@ -20,7 +20,8 @@ pysodmetrics==1.6.2         # S-alpha, E-phi, weighted F, MAE
 imagecorruptions==1.1.2     # ImageNet-C corruptions (NumPy-2 shim in src/corruptions.py)
 setuptools<81               # imagecorruptions imports pkg_resources
 
+timm==1.0.30                # ResNet-50 for ZoomNet/FEDER, TinyViT layers for MobileSAM
 gdown==6.4.2                # Google Drive downloads
 pytest==9.1.1
 
-# Added in later phases: timm (TinyViT/MobileSAM), fvcore (FLOPs), gradio (demo)
+# Added in later phases: fvcore (FLOPs), gradio (demo)
