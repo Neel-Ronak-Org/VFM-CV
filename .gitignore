@@ -1,0 +1,32 @@
+# Environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data and weights (never commit)
+data/*
+!data/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.zip
+
+# Generated outputs (results/*.csv ARE committed)
+results/predictions/
+results/logs/*.out
+demo/my_photos/*
+!demo/my_photos/.gitkeep
+
+# LaTeX build
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
