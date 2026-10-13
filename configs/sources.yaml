@@ -1,0 +1,63 @@
+# Download sources. Google Drive IDs are taken from the official READMEs (checked 2026-10-13).
+# If gdown fails (quota / permission), download manually in a browser and place the file
+# at `dest` -- scripts/download_data.py will pick it up and extract it.
+
+datasets:
+  cod_test:
+    desc: "SINet-V2 test package (CHAMELEON, CAMO, COD10K, possibly NC4K)"
+    source: https://github.com/GewelsJI/SINet-V2  # README 'Prepare the data'
+    gdrive_id: 1V0iSEdYJrT0Y_DHZfVGMg6TySFRNTy4o
+    dest: data/raw/downloads/TestDataset.zip
+  cod_train:
+    desc: "SINet-V2 train package (COD10K-train 3040 + CAMO-train 1000)"
+    source: https://github.com/GewelsJI/SINet-V2
+    gdrive_id: 1M8-Ivd33KslvyehLK9_IUBGJ_Kf52bWG
+    dest: data/raw/downloads/TrainDataset.zip
+  nc4k:
+    desc: "NC4K (Lv et al., CVPR 2021), only needed if not in the test package"
+    source: https://github.com/JingZhang617/COD-Rank-Localize-and-Segment
+    gdrive_id: 1kzpX_U3gbgO9MuwZIWTuRVpiB7V6yrAQ
+    dest: data/raw/downloads/NC4K.zip
+
+weights:
+  sinet_v2:
+    source: https://github.com/GewelsJI/SINet-V2
+    gdrive_id: 1D3RKQ8Nzd0ArV_c47StVKEuaoYTwnclR
+    dest: checkpoints/sinet_v2/Net_epoch_best.pth
+  res2net50:
+    desc: "ImageNet Res2Net-50 (only needed to train SINet-V2; not for inference)"
+    source: https://github.com/GewelsJI/SINet-V2
+    gdrive_id: 1QumnqSY_2wa-81-Ti0X1-jQzaGDIfa9r
+    dest: checkpoints/sinet_v2/res2net50_v1b_26w_4s-3cf99910.pth
+  zoomnet:
+    source: https://github.com/lartpang/ZoomNet
+    url: https://github.com/lartpang/ZoomNet/releases/download/v0.0.1/cod_zoomnet_r50_bs8_e40_2022-03-04.pth
+    dest: checkpoints/zoomnet/cod_zoomnet_r50_bs8_e40_2022-03-04.pth
+  pfnet:
+    source: https://github.com/Mhaiyang/CVPR2021_PFNet
+    manual: "Download PFNet.pth from https://mhaiyang.github.io/CVPR2021_PFNet/index.html"
+    dest: checkpoints/pfnet/PFNet.pth
+  feder:
+    source: https://github.com/ChunmingHe/FEDER
+    manual: "See README 'pretrained' Google Drive links; pick the COD (ResNet-50) checkpoint"
+    dest: checkpoints/feder/
+  sam_adapter:
+    source: https://github.com/tianrun-chen/SAM-Adapter-PyTorch
+    gdrive_id: 13JilJT7dhxwMIgcdtnvdzr08vcbREFlR
+    dest: checkpoints/sam_adapter/model_epoch_best.pth
+    note: "Backbone size (ViT-B/L/H) to be confirmed after download"
+  sam2_unet:
+    source: https://github.com/WZH0120/SAM2-UNet
+    manual: "Google Drive folder https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev - take the COD checkpoint"
+    dest: checkpoints/sam2_unet/
+  mobile_sam:
+    source: https://github.com/ChaoningZhang/MobileSAM
+    url: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt
+    dest: checkpoints/mobile_sam/mobile_sam.pt
+  efficient_sam_vitt:
+    source: https://github.com/yformer/EfficientSAM
+    url: https://github.com/yformer/EfficientSAM/raw/main/weights/efficient_sam_vitt.pt
+    dest: checkpoints/efficient_sam/efficient_sam_vitt.pt
+  # Not available (no COD-trained weights released as of 2026-10-13):
+  #   SAM2-Adapter (branch SAM2-Adapter-for-Segment-Anything-2) - training only, needs ~4xA100
+  #   SAM3-Adapter (branch SAM3-Adapter) - code zip only

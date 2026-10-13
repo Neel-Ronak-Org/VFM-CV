@@ -1,0 +1,12 @@
+# Dataset layout after scripts/download_data.py (SINet-V2 packaging).
+root: data/raw
+train:
+  dir: TrainDataset          # COD10K-train (3040) + CAMO-train (1000)
+  expected: 4040
+test:
+  CHAMELEON: {dir: TestDataset/CHAMELEON, expected: 76}
+  CAMO:      {dir: TestDataset/CAMO,      expected: 250}
+  COD10K:    {dir: TestDataset/COD10K,    expected: 2026}
+  NC4K:      {dir: TestDataset/NC4K,      expected: 4121}
+image_subdir: Imgs
+mask_subdir: GT

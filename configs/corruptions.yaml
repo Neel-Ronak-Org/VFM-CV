@@ -1,0 +1,20 @@
+# Corruption protocol (single source of truth).
+# Implementation: imagecorruptions (ImageNet-C, Hendrycks & Dietterich 2019) via src/corruptions.py.
+#
+# TODO(Phase 3): check Section 3 of COD10K-C (arXiv:2606.02603). If it lists its 8 types,
+# match them here. Search snippets confirm it uses motion blur AND Gaussian blur, so
+# `defocus_blur` may need to become `gaussian_blur`.
+
+severities: [1, 2, 3, 4, 5]
+base_seed: 20261013
+
+families:
+  noise:       [gaussian_noise, shot_noise]
+  blur:        [defocus_blur, motion_blur]
+  photometric: [brightness, contrast, fog]
+  digital:     [jpeg_compression]
+
+# Held-out protocol (contribution 3): one "seen" corruption per family is used for
+# training augmentation; the rest are never seen during training.
+seen:   [gaussian_noise, defocus_blur, brightness, jpeg_compression]
+unseen: [shot_noise, motion_blur, fog, contrast]
