@@ -88,3 +88,39 @@ Then: Phase 2 — SINet-V2 wrapper (Claude), weights via `python scripts/downloa
 - ~~Push from the cloud container failed (403)~~ — resolved: GitHub access fixed, branch pushed 2026-10-13.
 - Exact archive layout of the SINet-V2 Drive packages is not verified (organiser handles common variants; check the `--verify` output).
 - Rain is not comparable with COD10K-C (our approximation).
+
+---
+
+## Session 3 — 2026-10-13 (Claude, cloud container)
+
+### From the student
+- PR #1 and #2 merged; install works on the laptop.
+- `results/data_check.csv`: **all counts correct** (train 4040, CHAMELEON 76, CAMO 250, COD10K 2026, NC4K 4121); no missing pairs, non-binary or empty masks. **2 CHAMELEON images differ in size from their masks** (known quirk).
+- `figures/corruption_preview.jpg` on a real COD10K image looks as intended. **Phase 1 complete.**
+
+### Done (Phase 2, part 1: SINet-V2)
+- Vendored SINet-V2 network + Res2Net unchanged (`src/models/third_party/sinet_v2/`, Apache-2.0 LICENSE kept). Only the import path and a hard-coded pretrained path were edited.
+- `src/models/sinet_v2.py`: replicates the official `MyTesting.py` (PIL resize to 352, last output, logits upsampled to full resolution, sigmoid, per-image min-max). fp32 by default.
+- Harness: predictions are resized to the mask size when they differ (CHAMELEON quirk; standard protocol). `--precision auto|fp16|fp32`; precision and device are recorded per row.
+- `--verify`: size mismatch is now a warning (lists file names), not a failure.
+- Reproduction tooling: `configs/reported.yaml` (paper S-alpha with verification URLs), `scripts/eval_prediction_maps.py` (score released maps with our metrics), `scripts/make_reproduction.py` → `results/reproduction.csv`.
+- `scripts/download_data.py --maps sinet_v2` fetches the official SINet-V2 prediction maps.
+- 51 tests pass.
+
+### Next (student, on the laptop)
+```powershell
+git checkout main ; git pull
+python scripts/download_data.py --weights sinet_v2
+python scripts/download_data.py --maps sinet_v2
+python -m src.evaluate --models SINet-V2 --datasets CHAMELEON --corruptions clean     # ~1 min smoke test
+python -m src.evaluate --models SINet-V2 --datasets CAMO COD10K NC4K --corruptions clean
+python scripts/eval_prediction_maps.py --model SINet-V2 --pred-root data/released_maps/SINet-V2
+python scripts/make_reproduction.py
+git add results/ ; git commit -m "SINet-V2 clean reproduction" ; git push
+```
+
+### Next (Claude)
+- Remaining Phase 2 wrappers: SAM2-UNet, ZoomNet, PFNet, SAM-Adapter, FEDER, oracle-box MobileSAM.
+
+### Open problems
+- SINet-V2 E-phi / F-beta-w / MAE published values not yet confirmed against the TPAMI paper itself (secondary sources disagree); only S-alpha is used for the reproduction criterion.

@@ -1,0 +1,15 @@
+# Clean-image numbers reported by each baseline's paper, used by scripts/make_reproduction.py.
+# Only values confirmed against a citable source go here; each entry records where it came from.
+# Reproduction criterion (CLAUDE.md, Phase 2): |S-alpha ours - reported| <= 0.015.
+tolerance_Sm: 0.015
+
+SINet-V2:
+  source: >-
+    Fan et al., Concealed Object Detection, IEEE TPAMI 2022 (Res2Net-50). S-alpha values confirmed
+    in two independent comparison tables: arXiv:2110.15606 and HRRNet (PMC12470956).
+    Other metrics differ between secondary sources, so only S-alpha is recorded until checked
+    against the TPAMI paper itself.
+  verified_urls:
+    - https://arxiv.org/pdf/2110.15606
+    - https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
+  Sm: {CHAMELEON: 0.888, CAMO: 0.820, COD10K: 0.815, NC4K: 0.847}

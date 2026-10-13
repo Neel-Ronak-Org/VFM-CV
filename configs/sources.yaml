@@ -19,6 +19,15 @@ datasets:
     gdrive_id: 1kzpX_U3gbgO9MuwZIWTuRVpiB7V6yrAQ
     dest: data/raw/downloads/NC4K.zip
 
+prediction_maps:
+  # Officially released prediction maps, used to check our ports (same metrics code on both).
+  sinet_v2:
+    desc: "SINet-V2 PyTorch prediction maps on CHAMELEON, CAMO, COD10K, NC4K"
+    source: https://github.com/GewelsJI/SINet-V2   # README 'results' link (PyTorch)
+    gdrive_id: 19s_jIMCgZxft2GXiomsMRF0SZLmP9FQ_
+    dest: data/raw/downloads/SINetV2_maps.zip
+    extract_to: data/released_maps/SINet-V2
+
 weights:
   sinet_v2:
     source: https://github.com/GewelsJI/SINet-V2

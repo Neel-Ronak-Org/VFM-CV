@@ -3,6 +3,7 @@
     python scripts/download_data.py --data            # train + test packages (+ NC4K if missing)
     python scripts/download_data.py --weights sinet_v2 mobile_sam
     python scripts/download_data.py --verify          # counts, pairing, sizes, mask binarity
+    python scripts/download_data.py --maps sinet_v2   # officially released prediction maps
 
 If a Google Drive download fails (quota/permission), the script prints the link and
 the exact path to save the file to. Re-run it afterwards and it will extract and
@@ -145,8 +146,9 @@ def main() -> None:
     ap.add_argument("--data", action="store_true")
     ap.add_argument("--weights", nargs="*", help=f"any of: {', '.join(SOURCES['weights'])}")
     ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--maps", nargs="*", help=f"released prediction maps: {', '.join(SOURCES['prediction_maps'])}")
     args = ap.parse_args()
-    if not (args.data or args.weights is not None or args.verify):
+    if not (args.data or args.weights is not None or args.verify or args.maps is not None):
         ap.print_help()
         return
     if args.data:
@@ -154,6 +156,13 @@ def main() -> None:
     if args.weights is not None:
         for w in args.weights or SOURCES["weights"]:
             fetch(SOURCES["weights"][w])
+    if args.maps is not None:
+        for m in args.maps or SOURCES["prediction_maps"]:
+            entry = SOURCES["prediction_maps"][m]
+            arc = fetch(entry)
+            if arc and zipfile.is_zipfile(arc):
+                safe_extract(arc, REPO / entry["extract_to"])
+                print(f"[ok] {m} maps -> {entry['extract_to']}")
     if args.verify:
         sys.exit(0 if do_verify() else 1)
 

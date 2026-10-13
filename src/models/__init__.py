@@ -7,8 +7,7 @@ import importlib
 # name -> "module:ClassName"
 REGISTRY = {
     "debug-centre": "src.models.base:_Constant",
-    # Phase 2 wrappers are added here as they are written, e.g.
-    # "SINet-V2": "src.models.sinet_v2:SINetV2",
+    "SINet-V2": "src.models.sinet_v2:SINetV2",
 }
 
 
