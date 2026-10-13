@@ -76,4 +76,24 @@ A perfect binary map gives Eφ slightly below 1.0 (≈0.997). That is expected: 
 
 Every baseline gets a small wrapper with one method: `predict(rgb_image) → float map in [0,1] at the original resolution`. The evaluation code doesn't care whether the model is SINet-V2 or a SAM variant, which keeps the comparison fair: same images, same corruptions, same metrics code. Old baselines (written for PyTorch 1.x) are *ported* into these wrappers instead of running in old environments.
 
+## 5. SINet-V2, our reference specialist
+
+**What:** SINet-V2 (Fan et al., TPAMI 2022) is the standard COD baseline from the team that built COD10K. It copies how a predator hunts: first *search* for a rough location, then *identify* the exact shape.
+- A Res2Net-50 backbone (a ResNet variant that sees several scales inside each block) extracts features.
+- "Receptive field" blocks widen what each feature sees.
+- A *neighbour connection decoder* fuses the three deepest feature levels into a coarse map (search).
+- Three *group-reversal attention* stages refine it (identify). Each stage looks at what is *not yet* predicted (1 − sigmoid of the current map), which pushes the network to recover missed object parts and edges.
+
+**Why it's our reference:** Every COD paper compares against it, COD10K-C used it, and its code and weights are public. If we can reproduce its published numbers, our harness is trustworthy.
+
+**How we run it:** Exactly like the official test script: resize to 352×352, normalise, take the final output, upsample the raw scores to the original size, apply a sigmoid, then **min-max normalise each map to [0, 1]**. That last step is part of the official protocol, but be ready to discuss it. It stretches *any* prediction to full contrast, so a model that is unsure everywhere still outputs a confident-looking map. Under heavy corruption this can inflate false positives. The wrapper has a switch to turn it off for an ablation.
+
+## 6. How we check that a ported baseline is correct
+
+Old baselines were written for PyTorch 1.x. We copy their network code unchanged and run it in our environment, then check it two ways:
+1. **Against the paper:** our clean Sα must be within ±0.015 of the published Sα (`configs/reported.yaml` stores each published value with the URL where we confirmed it).
+2. **Against the authors' own prediction maps:** we score their released maps with *our* metrics code. If our predictions score the same as their maps, the port is correct, even if the paper's number came from an older evaluation toolbox.
+
+`scripts/make_reproduction.py` puts both comparisons in `results/reproduction.csv`.
+
 *(Sections on the SAM family, adapters, the consistency loss and efficiency metrics are added in Phases 2–5.)*

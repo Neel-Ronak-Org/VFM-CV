@@ -24,3 +24,10 @@ def test_verify_detects_problems(tiny_dataset):
     os.remove(tiny_dataset / "GT" / "img_1.png")
     r = verify_dataset(CODDataset(tiny_dataset), expected=4)
     assert not r["ok"] and r["missing_masks"] == 1 and not r["count_ok"]
+
+
+def test_size_mismatch_is_reported_but_not_fatal(tiny_dataset):
+    import cv2
+    cv2.imwrite(str(tiny_dataset / "GT" / "img_2.png"), np.zeros((10, 10), np.uint8))
+    r = verify_dataset(CODDataset(tiny_dataset), expected=4)
+    assert r["ok"] and r["size_mismatch"] == 1 and r["size_mismatch_names"] == "img_2"

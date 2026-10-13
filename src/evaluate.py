@@ -31,7 +31,8 @@ from src.models import build_model
 from src.utils import REPO, git_hash, write_run_log
 
 KEY = ("model", "dataset", "corruption", "severity")
-FIELDS = list(KEY) + list(METRIC_NAMES) + ["n_images", "mean_latency_ms", "seconds", "git", "base_seed", "timestamp"]
+FIELDS = list(KEY) + list(METRIC_NAMES) + ["n_images", "mean_latency_ms", "precision", "device", "seconds", "git",
+                                            "base_seed", "timestamp"]
 
 
 def load_done(csv_path: Path) -> set[tuple]:
@@ -77,6 +78,10 @@ def evaluate_condition(model, ds: CODDataset, corruption: str, severity: int, ba
         name, img, gt = ds[i]
         img = corrupt_for_benchmark(img, ds.name, name, corruption, severity, base_seed)
         pred = model.predict(img)
+        if pred.shape != gt.shape:
+            # A few test images (2 in CHAMELEON) differ in size from their mask. Standard COD
+            # evaluation scores at the mask's resolution, so resize the prediction to it.
+            pred = cv2.resize(pred, (gt.shape[1], gt.shape[0]), interpolation=cv2.INTER_LINEAR)
         metrics.step(pred, gt)
         latencies.append(model.last_latency_ms or 0.0)
         if save_dir is not None and save_names and name in save_names:
@@ -99,7 +104,8 @@ def main(argv=None):
     ap.add_argument("--out", default="results/benchmark.csv")
     ap.add_argument("--data-root", default=None)
     ap.add_argument("--device", default=None)
-    ap.add_argument("--no-fp16", action="store_true")
+    ap.add_argument("--precision", choices=["auto", "fp16", "fp32"], default="auto",
+                    help="auto = each model's default (fp32 for small specialists, fp16 for large models)")
     ap.add_argument("--limit", type=int, default=None, help="only first N images (smoke tests; not resumable-safe)")
     ap.add_argument("--save-pred", type=int, default=0, help="save predictions for the first N images (qualitative subset)")
     args = ap.parse_args(argv)
@@ -119,7 +125,8 @@ def main(argv=None):
         if not todo:
             print(f"[skip] {model_name}: all {len(conds) * len(args.datasets)} combinations already in {out}")
             continue
-        model = build_model(model_name, device=args.device, fp16=not args.no_fp16)
+        fp16 = {"auto": None, "fp16": True, "fp32": False}[args.precision]
+        model = build_model(model_name, device=args.device, fp16=fp16)
         for d in args.datasets:
             ds = CODDataset.from_config(d, data_cfg, root=args.data_root)
             save_names = {s.name for s in ds.samples[: args.save_pred]}
@@ -128,6 +135,7 @@ def main(argv=None):
                 save_dir = REPO / "results" / "predictions" / model_name / d / f"{c}-{s}" if args.save_pred else None
                 res = evaluate_condition(model, ds, c, s, protocol["base_seed"], args.limit, save_dir, save_names)
                 row = {"model": model_name, "dataset": d, "corruption": c, "severity": s, **res,
+                       "precision": "fp16" if model.fp16 else "fp32", "device": str(model.device),
                        "seconds": round(time.time() - t0, 1), "git": git_hash(),
                        "base_seed": protocol["base_seed"], "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")}
                 append_row(out, {k: (round(v, 6) if isinstance(v, float) else v) for k, v in row.items()})

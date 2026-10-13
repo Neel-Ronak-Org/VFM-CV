@@ -25,9 +25,13 @@ class CODModel(abc.ABC):
     name: str = "base"
     #: provenance: source repo, commit/release, weights URL (also in each file's header)
     source: str = ""
+    #: precision used when the caller doesn't choose. Small specialist models run in fp32,
+    #: as in their papers; large foundation models default to fp16 to fit in 4 GB.
+    default_fp16: bool = True
 
-    def __init__(self, device: str | None = None, fp16: bool = True):
+    def __init__(self, device: str | None = None, fp16: bool | None = None):
         self.device = pick_device(device)
+        fp16 = self.default_fp16 if fp16 is None else fp16
         # fp16 autocast only on CUDA; CPU falls back to fp32 for correctness and speed.
         self.fp16 = fp16 and self.device.type == "cuda"
         self.last_latency_ms: float | None = None
@@ -54,11 +58,41 @@ class CODModel(abc.ABC):
         return np.clip(prob, 0.0, 1.0).astype(np.float32)
 
 
-def normalize_imagenet(img: np.ndarray, size: int | tuple[int, int], device: torch.device) -> torch.Tensor:
-    """Resize to `size` and apply ImageNet mean/std, the preprocessing most COD models use."""
+def load_state_dict_file(model: torch.nn.Module, path, strict: bool = True) -> None:
+    """Load a checkpoint saved by any of the usual conventions (raw state_dict, {'state_dict': ...},
+    {'model': ...}, DataParallel 'module.' prefixes). Fails loudly on key mismatch when strict."""
+    from pathlib import Path
+
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"weights not found: {path} (see configs/sources.yaml / scripts/download_data.py --weights)")
+    ckpt = torch.load(path, map_location="cpu", weights_only=False)
+    for key in ("state_dict", "model", "net"):
+        if isinstance(ckpt, dict) and key in ckpt and isinstance(ckpt[key], dict):
+            ckpt = ckpt[key]
+            break
+    ckpt = {k.removeprefix("module."): v for k, v in ckpt.items()}
+    missing, unexpected = model.load_state_dict(ckpt, strict=False)
+    if strict and (missing or unexpected):
+        raise RuntimeError(f"checkpoint {path.name} does not match the model: "
+                           f"{len(missing)} missing (e.g. {missing[:3]}), {len(unexpected)} unexpected (e.g. {unexpected[:3]})")
+
+
+def normalize_imagenet(img: np.ndarray, size: int | tuple[int, int], device: torch.device,
+                       resize: str = "pil") -> torch.Tensor:
+    """Resize to `size` (h, w) and apply ImageNet mean/std, the preprocessing most COD models use.
+
+    resize="pil" matches torchvision `transforms.Resize` on a PIL image (bilinear with
+    antialiasing), which is what most official COD test scripts do. "cv2" is plain bilinear.
+    """
     if isinstance(size, int):
         size = (size, size)
-    x = cv2.resize(img, (size[1], size[0]), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255.0
+    if resize == "pil":
+        from PIL import Image
+
+        x = np.asarray(Image.fromarray(img).resize((size[1], size[0]), Image.BILINEAR), dtype=np.float32) / 255.0
+    else:
+        x = cv2.resize(img, (size[1], size[0]), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255.0
     x = (x - np.array([0.485, 0.456, 0.406], np.float32)) / np.array([0.229, 0.224, 0.225], np.float32)
     return torch.from_numpy(x.transpose(2, 0, 1)).unsqueeze(0).to(device)
 

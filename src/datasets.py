@@ -89,16 +89,20 @@ def verify_dataset(ds: CODDataset, expected: int | None = None, check_pixels: bo
         "dataset": ds.name, "n_pairs": len(ds), "expected": expected,
         "count_ok": expected is None or len(ds) == expected,
         "missing_masks": len(ds.missing_masks), "missing_images": len(ds.missing_images),
-        "size_mismatch": 0, "nonbinary_masks": 0, "empty_masks": 0,
+        "unreadable": 0, "size_mismatch": 0, "nonbinary_masks": 0, "empty_masks": 0,
     }
-    heights, widths, areas = [], [], []
+    heights, widths, areas, mismatched = [], [], [], []
     if check_pixels:
         for s in ds.samples:
             img = cv2.imread(str(s.image_path), cv2.IMREAD_COLOR)
             m = cv2.imread(str(s.mask_path), cv2.IMREAD_GRAYSCALE)
-            if img is None or m is None or img.shape[:2] != m.shape[:2]:
-                report["size_mismatch"] += 1
+            if img is None or m is None:
+                report["unreadable"] += 1
                 continue
+            if img.shape[:2] != m.shape[:2]:
+                # Not fatal: evaluation resizes predictions to the mask size (standard protocol).
+                report["size_mismatch"] += 1
+                mismatched.append(s.name)
             vals = np.unique(m)
             # "Binary" here allows a few anti-aliased edge values; flag masks where >1% of pixels are grey.
             if not set(vals.tolist()) <= {0, 255} and np.mean((m > 0) & (m < 255)) > 0.01:
@@ -112,6 +116,7 @@ def verify_dataset(ds: CODDataset, expected: int | None = None, check_pixels: bo
         report.update(mean_height=round(float(np.mean(heights)), 1), mean_width=round(float(np.mean(widths)), 1),
                       min_side=int(min(min(heights), min(widths))), max_side=int(max(max(heights), max(widths))),
                       mean_object_fraction=round(float(np.mean(areas)), 4))
+    report["size_mismatch_names"] = ";".join(mismatched)
     report["ok"] = bool(report["count_ok"] and report["missing_masks"] == 0 and report["missing_images"] == 0
-                        and report["size_mismatch"] == 0)
+                        and report["unreadable"] == 0)
     return report
