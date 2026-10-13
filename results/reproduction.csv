@@ -1,0 +1,5 @@
+model,dataset,Sm_ours,Em_ours,wFm_ours,MAE_ours,n_images,precision,Sm_reported,delta_Sm_vs_reported,within_tolerance,reported_source
+SINet-V2,CHAMELEON,0.888064,0.941431,0.815847,0.029758,76,fp32,0.888,0.0001,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
+SINet-V2,CAMO,0.820405,0.882126,0.74269,0.070305,250,fp32,0.82,0.0004,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
+SINet-V2,COD10K,0.815154,0.887131,0.679718,0.036775,2026,fp32,0.815,0.0002,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
+SINet-V2,NC4K,0.846976,0.902319,0.769382,0.047723,4121,fp32,0.847,-0.0,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
