@@ -25,6 +25,9 @@ class CODModel(abc.ABC):
     name: str = "base"
     #: provenance: source repo, commit/release, weights URL (also in each file's header)
     source: str = ""
+    #: True only for "oracle" analysis models that need the ground truth (e.g. a GT-box prompt).
+    #: The harness then calls set_gt(mask) before predict(). Never a fair competitor.
+    needs_gt: bool = False
     #: precision used when the caller doesn't choose. Small specialist models run in fp32,
     #: as in their papers; large foundation models default to fp16 to fit in 4 GB.
     default_fp16: bool = True
@@ -35,6 +38,9 @@ class CODModel(abc.ABC):
         # fp16 autocast only on CUDA; CPU falls back to fp32 for correctness and speed.
         self.fp16 = fp16 and self.device.type == "cuda"
         self.last_latency_ms: float | None = None
+
+    def set_gt(self, gt: np.ndarray) -> None:  # only used when needs_gt is True
+        raise NotImplementedError
 
     @abc.abstractmethod
     def _forward(self, img: np.ndarray) -> torch.Tensor:
@@ -64,6 +70,14 @@ def load_state_dict_file(model: torch.nn.Module, path, strict: bool = True) -> N
     from pathlib import Path
 
     path = Path(path)
+    load_state_dict_obj(model, read_state_dict(path), path.name, strict)
+
+
+def read_state_dict(path) -> dict:
+    """Read a checkpoint file into a plain state_dict (unwrapping common containers and prefixes)."""
+    from pathlib import Path
+
+    path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"weights not found: {path} (see configs/sources.yaml / scripts/download_data.py --weights)")
     ckpt = torch.load(path, map_location="cpu", weights_only=False)
@@ -71,11 +85,26 @@ def load_state_dict_file(model: torch.nn.Module, path, strict: bool = True) -> N
         if isinstance(ckpt, dict) and key in ckpt and isinstance(ckpt[key], dict):
             ckpt = ckpt[key]
             break
-    ckpt = {k.removeprefix("module."): v for k, v in ckpt.items()}
-    missing, unexpected = model.load_state_dict(ckpt, strict=False)
+    return {k.removeprefix("module."): v for k, v in ckpt.items()}
+
+
+def load_state_dict_obj(model: torch.nn.Module, state_dict: dict, name: str = "checkpoint", strict: bool = True) -> None:
+    missing, unexpected = model.load_state_dict(state_dict, strict=False)
     if strict and (missing or unexpected):
-        raise RuntimeError(f"checkpoint {path.name} does not match the model: "
+        raise RuntimeError(f"checkpoint {name} does not match the model: "
                            f"{len(missing)} missing (e.g. {missing[:3]}), {len(unexpected)} unexpected (e.g. {unexpected[:3]})")
+
+
+def cod_postprocess(logits: torch.Tensor, size: tuple[int, int], minmax: bool = True) -> torch.Tensor:
+    """The post-processing used by most official COD test scripts (SINet-V2, SAM2-UNet, ...):
+    upsample the logits bilinearly (align_corners=False) to `size` (h, w), sigmoid, then optional
+    per-image min-max normalisation (p - min) / (max - min + 1e-8)."""
+    import torch.nn.functional as F
+
+    prob = F.interpolate(logits.float(), size=size, mode="bilinear", align_corners=False).sigmoid()
+    if minmax:
+        prob = (prob - prob.min()) / (prob.max() - prob.min() + 1e-8)
+    return prob
 
 
 def normalize_imagenet(img: np.ndarray, size: int | tuple[int, int], device: torch.device,

@@ -13,7 +13,9 @@ We **never redistribute** any dataset. Users download from the official links (`
 
 **Code licences that matter for release (Phase 9):**
 - SINet-V2 repo has an Apache-2.0 `LICENSE` file, but its README says "free for research and education use only; any commercial usage should get formal permission first". Vendored SINet-V2 network code keeps its own header and licence notice; our MIT licence applies to our own code only.
-- Other baselines: record each one's licence in its wrapper header when it's written (Phase 2).
+- Vendored baseline code (each folder in `src/models/third_party/` keeps its LICENSE):
+  SAM2-UNet Apache-2.0 · ZoomNet MIT · PFNet BSD-style (copyright notice retained) · FEDER MIT ·
+  SAM-Adapter MIT (SAM parts Apache-2.0) · MobileSAM Apache-2.0.
 
 **Consequence for the paper:** state that all datasets are used for non-commercial academic research under their authors' terms.
 

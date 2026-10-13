@@ -124,3 +124,52 @@ git add results/ ; git commit -m "SINet-V2 clean reproduction" ; git push
 
 ### Open problems
 - SINet-V2 E-phi / F-beta-w / MAE published values not yet confirmed against the TPAMI paper itself (secondary sources disagree); only S-alpha is used for the reproduction criterion.
+
+---
+
+## Session 4 — 2026-10-13 (Claude, cloud container)
+
+### From the student
+- PR #3 merged. **SINet-V2 reproduces:** clean S-alpha CHAMELEON 0.8881 / CAMO 0.8204 / COD10K 0.8152 / NC4K 0.8470 vs reported 0.888 / 0.820 / 0.815 / 0.847 (all |Δ| ≤ 0.0004, tolerance 0.015). `results/reproduction.csv`. Checkpoint-2 gate passed for SINet-V2.
+- Note: CHAMELEON latency in that run was 2.4 s/img (others 60–90 ms) — warm-up or a busy laptop; latency for the paper will come from `src/profile.py` (Phase 5), not from evaluation runs.
+
+### Done (Phase 2, part 2: remaining baselines)
+Every wrapper copies the official test script's preprocessing and post-processing; each wrapper's header records source commit, licence, weights URL and porting changes. All networks vendored under `src/models/third_party/` with their LICENSE.
+
+| Model | Port | Weights check in container | Reported S-alpha in `configs/reported.yaml` |
+|---|---|---|---|
+| SAM2-UNet | Hiera-L trunk built directly (no hydra/sam2 pkg) | — (Drive) | 4 datasets (arXiv HTML) |
+| ZoomNet | timm ResNet-50, pretrained=False | **strict load OK, 901/901 keys** | CHAMELEON/CAMO/COD10K (survey); NC4K unconfirmed |
+| PFNet | backbone only loaded for training | — (project page) | CHAMELEON/CAMO/COD10K (1 secondary table) |
+| FEDER | import paths only | — (Drive) | none confirmed → released maps used |
+| SAM-Adapter | loss/training code removed; ViT-B/L/H auto-detected from checkpoint | — (Drive) | CHAMELEON/CAMO/COD10K (SAM2-Adapter paper table) |
+| Oracle-Box MobileSAM | timm import path; registry factories removed | **strict load OK** | n/a (oracle) |
+
+- Harness: `needs_gt` / `set_gt()` hook for oracle models only.
+- Parameter counts match the papers (ZoomNet 32.38M, PFNet 46.50M); tests check each wrapper's contract and size. 58 tests pass.
+- `scripts/run_clean_baselines.py`: one command for all clean runs + reproduction table; skips models whose weights are missing.
+- `download_data.py`: Drive-folder downloads (SAM2-UNet weights + maps, FEDER maps), ZoomNet maps from GitHub release.
+- `timm==1.0.30` added to requirements (resolves on windows/linux py3.11).
+- EXPLAINER §7: baseline table, post-processing differences, training-data note, oracle rationale.
+
+### Next (student, on the laptop)
+```powershell
+git checkout main ; git pull
+uv pip install -r requirements.txt                     # adds timm
+python scripts/download_data.py --weights zoomnet feder sam_adapter sam2_unet mobile_sam
+#   PFNet: download PFNet.pth manually from https://mhaiyang.github.io/CVPR2021_PFNet/index.html -> checkpoints/pfnet/PFNet.pth
+python scripts/download_data.py --maps zoomnet feder sinet_v2
+python scripts/run_clean_baselines.py
+python scripts/eval_prediction_maps.py --model ZoomNet --pred-root data/released_maps/ZoomNet
+python scripts/eval_prediction_maps.py --model FEDER   --pred-root data/released_maps/FEDER
+python scripts/eval_prediction_maps.py --model SINet-V2 --pred-root data/released_maps/SINet-V2
+python scripts/make_reproduction.py
+git add results/ ; git commit -m "Phase 2 clean baselines" ; git push
+```
+Then 🛑 **CHECKPOINT 2** (full reproduction table).
+
+### Open problems
+- PFNet weights only via the project page (manual download).
+- SAM-Adapter checkpoint backbone unknown until downloaded (auto-detected); ViT-H fp16 at 1024 should fit in 4 GB but is unverified.
+- SAM-Adapter's published numbers are computed at 1024x1024 with its own metric code → expect a small gap.
+- FEDER published S-alpha not confirmed; relies on released-maps comparison.

@@ -31,13 +31,23 @@ TEST_SETS = ("CHAMELEON", "CAMO", "COD10K", "NC4K")
 
 def fetch(entry: dict) -> Path | None:
     dest = REPO / entry["dest"]
-    if dest.suffix == "":  # folder destinations are manual-only
+    if dest.suffix == "":  # folder destination
         dest.mkdir(parents=True, exist_ok=True)
+        if any(p.is_file() for p in dest.rglob("*")):
+            print(f"[ok] {dest.relative_to(REPO)} already has files")
+            return dest
     elif dest.exists():
         print(f"[ok] {dest.relative_to(REPO)} already present")
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
     try:
+        if "gdrive_folder" in entry:
+            import gdown
+
+            out = gdown.download_folder(id=entry["gdrive_folder"], output=str(dest), quiet=False)
+            if not out:
+                raise RuntimeError("gdown.download_folder returned nothing")
+            return dest
         if "gdrive_id" in entry:
             import gdown
 
@@ -51,8 +61,8 @@ def fetch(entry: dict) -> Path | None:
             raise RuntimeError("manual download required")
         return dest
     except Exception as e:  # noqa: BLE001
-        link = (f"https://drive.google.com/file/d/{entry['gdrive_id']}/view" if "gdrive_id" in entry
-                else entry.get("url") or entry.get("manual"))
+        link = entry.get("manual") or (f"https://drive.google.com/file/d/{entry['gdrive_id']}/view"
+                                       if "gdrive_id" in entry else entry.get("url"))
         print(f"\n[MANUAL] Could not download automatically ({e}).\n"
               f"  1. Open: {link}\n  2. Save the file to: {dest}\n  3. Re-run this script.\n")
         if dest.exists() and dest.stat().st_size == 0:
@@ -160,9 +170,11 @@ def main() -> None:
         for m in args.maps or SOURCES["prediction_maps"]:
             entry = SOURCES["prediction_maps"][m]
             arc = fetch(entry)
-            if arc and zipfile.is_zipfile(arc):
-                safe_extract(arc, REPO / entry["extract_to"])
-                print(f"[ok] {m} maps -> {entry['extract_to']}")
+            archives = ([arc] if arc and arc.is_file() else sorted(arc.rglob("*.zip")) if arc else [])
+            for a in archives:
+                if zipfile.is_zipfile(a):
+                    safe_extract(a, REPO / entry["extract_to"])
+                    print(f"[ok] {m}: {a.name} -> {entry['extract_to']}")
     if args.verify:
         sys.exit(0 if do_verify() else 1)
 

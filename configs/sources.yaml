@@ -21,6 +21,25 @@ datasets:
 
 prediction_maps:
   # Officially released prediction maps, used to check our ports (same metrics code on both).
+  zoomnet:
+    desc: "ZoomNet COD prediction maps (GitHub release)"
+    source: https://github.com/lartpang/ZoomNet
+    url: https://github.com/lartpang/ZoomNet/releases/download/v0.0.1/CVPR-2022-ZoomNet-COD.zip
+    dest: data/raw/downloads/ZoomNet_maps.zip
+    extract_to: data/released_maps/ZoomNet
+  feder:
+    desc: "FEDER prediction maps (Google Drive folder, README §6)"
+    source: https://github.com/ChunmingHe/FEDER
+    gdrive_folder: 1Pho42bHiBhVR0l9KzdOFQgqLzr8mSv9e
+    dest: data/released_maps/FEDER/
+    extract_to: data/released_maps/FEDER
+  sam2_unet:
+    desc: "SAM2-UNet prediction maps live in the same Drive folder as its weights (downloaded once)"
+    source: https://github.com/WZH0120/SAM2-UNet
+    gdrive_folder: 1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev
+    dest: checkpoints/sam2_unet/
+    extract_to: data/released_maps/SAM2-UNet
+    note: "gdown cannot list Drive folders with >50 files; if it fails, download the COD maps archive manually"
   sinet_v2:
     desc: "SINet-V2 PyTorch prediction maps on CHAMELEON, CAMO, COD10K, NC4K"
     source: https://github.com/GewelsJI/SINet-V2   # README 'results' link (PyTorch)
@@ -47,18 +66,20 @@ weights:
     manual: "Download PFNet.pth from https://mhaiyang.github.io/CVPR2021_PFNet/index.html"
     dest: checkpoints/pfnet/PFNet.pth
   feder:
-    source: https://github.com/ChunmingHe/FEDER
-    manual: "See README 'pretrained' Google Drive links; pick the COD (ResNet-50) checkpoint"
-    dest: checkpoints/feder/
+    source: https://github.com/ChunmingHe/FEDER   # README §4 "well-trained model"
+    gdrive_id: 1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc
+    dest: checkpoints/feder/FEDER.pth
   sam_adapter:
     source: https://github.com/tianrun-chen/SAM-Adapter-PyTorch
     gdrive_id: 13JilJT7dhxwMIgcdtnvdzr08vcbREFlR
     dest: checkpoints/sam_adapter/model_epoch_best.pth
     note: "Backbone size (ViT-B/L/H) to be confirmed after download"
   sam2_unet:
-    source: https://github.com/WZH0120/SAM2-UNet
-    manual: "Google Drive folder https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev - take the COD checkpoint"
+    source: https://github.com/WZH0120/SAM2-UNet   # README: "pre-trained models and prediction maps"
+    gdrive_folder: 1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev
+    manual: "Open https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev and download the camouflaged-object checkpoint (.pth) into checkpoints/sam2_unet/"
     dest: checkpoints/sam2_unet/
+    note: "The folder also holds prediction maps and other tasks' checkpoints; the wrapper picks the file with cod/camo in its name"
   mobile_sam:
     source: https://github.com/ChaoningZhang/MobileSAM
     url: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt

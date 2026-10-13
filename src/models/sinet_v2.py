@@ -21,9 +21,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 
-from src.models.base import CODModel, load_state_dict_file, normalize_imagenet
+from src.models.base import CODModel, cod_postprocess, load_state_dict_file, normalize_imagenet
 from src.models.third_party.sinet_v2.network import Network
 
 REPO = Path(__file__).resolve().parents[2]
@@ -47,8 +46,4 @@ class SINetV2(CODModel):
     def _forward(self, img: np.ndarray) -> torch.Tensor:
         h, w = img.shape[:2]
         x = normalize_imagenet(img, self.input_size, self.device, resize="pil")
-        logits = self.net(x)[-1]
-        prob = F.interpolate(logits.float(), size=(h, w), mode="bilinear", align_corners=False).sigmoid()
-        if self.minmax:
-            prob = (prob - prob.min()) / (prob.max() - prob.min() + 1e-8)
-        return prob
+        return cod_postprocess(self.net(x)[-1], (h, w), self.minmax)
