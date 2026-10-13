@@ -15,6 +15,8 @@ import numpy as np
 import yaml
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".bmp"}
+# Some packages name the mask folder differently; tried in order if `mask_subdir` is missing.
+MASK_SUBDIR_ALTERNATIVES = ("GT", "GT_Object", "GT_Mask", "Mask", "masks")
 REPO = Path(__file__).resolve().parents[1]
 DATA_CONFIG = REPO / "configs" / "data.yaml"
 
@@ -54,6 +56,8 @@ class CODDataset:
         self.root = Path(split_dir)
         self.name = name or self.root.name
         img_dir, mask_dir = self.root / image_subdir, self.root / mask_subdir
+        if not mask_dir.is_dir():
+            mask_dir = next((self.root / m for m in MASK_SUBDIR_ALTERNATIVES if (self.root / m).is_dir()), mask_dir)
         if not img_dir.is_dir() or not mask_dir.is_dir():
             raise FileNotFoundError(f"expected {img_dir} and {mask_dir}")
         imgs = {p.stem: p for p in img_dir.iterdir() if p.suffix.lower() in IMG_EXTS}
@@ -87,6 +91,7 @@ def verify_dataset(ds: CODDataset, expected: int | None = None, check_pixels: bo
         "missing_masks": len(ds.missing_masks), "missing_images": len(ds.missing_images),
         "size_mismatch": 0, "nonbinary_masks": 0, "empty_masks": 0,
     }
+    heights, widths, areas = [], [], []
     if check_pixels:
         for s in ds.samples:
             img = cv2.imread(str(s.image_path), cv2.IMREAD_COLOR)
@@ -100,6 +105,13 @@ def verify_dataset(ds: CODDataset, expected: int | None = None, check_pixels: bo
                 report["nonbinary_masks"] += 1
             if not (m >= 128).any():
                 report["empty_masks"] += 1
+            heights.append(m.shape[0])
+            widths.append(m.shape[1])
+            areas.append(float((m >= 128).mean()))
+    if heights:  # dataset statistics for the paper's dataset section
+        report.update(mean_height=round(float(np.mean(heights)), 1), mean_width=round(float(np.mean(widths)), 1),
+                      min_side=int(min(min(heights), min(widths))), max_side=int(max(max(heights), max(widths))),
+                      mean_object_fraction=round(float(np.mean(areas)), 4))
     report["ok"] = bool(report["count_ok"] and report["missing_masks"] == 0 and report["missing_images"] == 0
                         and report["size_mismatch"] == 0)
     return report

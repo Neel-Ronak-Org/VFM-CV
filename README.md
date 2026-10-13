@@ -12,18 +12,24 @@ A corruption-robustness benchmark for camouflaged object detection (COD) that co
 
 ## Setup
 
-Python 3.10 or 3.11.
+Python 3.11 in a project-local virtual environment, managed with [uv](https://docs.astral.sh/uv/). uv downloads Python 3.11 for you; your system Python (e.g. 3.13) is left alone.
 
-```bash
-# with uv (recommended)
+**Windows (PowerShell), the student laptop:**
+```powershell
+# one-time: install uv
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+cd VFM-CV
 uv venv --python 3.11 .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
-# install the CUDA build of PyTorch first, matching your driver, e.g.:
-uv pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu128
+.venv\Scripts\activate
+uv pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
 uv pip install -r requirements.txt
-python scripts/env_check.py          # records OS / GPU / VRAM
-python -m pytest -q                  # unit tests (CPU only)
+python scripts/env_check.py          # must show "CUDA available: True" and torch 2.6.0+cu124
+python -m pytest -q                  # unit tests
 ```
+If PowerShell refuses to run `activate`, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
+
+**Linux / WSL2:** same, with `source .venv/bin/activate`.
 
 ## Data
 

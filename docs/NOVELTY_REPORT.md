@@ -52,8 +52,8 @@ These came out of checking repos and weights during Phase 0:
 2. **SAM-Adapter:** one released checkpoint (Google Drive). It is most likely the ViT-H COD model **[verify after download]**. ViT-H encoder in fp16 is about 1.3 GB of weights, so batch-1 inference on 4 GB is plausible but tight.
 3. **Specialists:** SINet-V2 (Drive), ZoomNet (GitHub release, `.pth`), PFNet (author project page), FEDER (Drive). All have released weights.
 4. **Lightweight SAMs:** MobileSAM weights are in its GitHub repo (`weights/mobile_sam.pt`, about 40 MB) and on Drive. EfficientSAM-Ti/S weights are in its GitHub repo.
-5. **COD10K-C exact corruption list:** the snippets confirm motion blur, **Gaussian blur**, fog and brightness. The other four names and the severity parameters were not visible **[verify from the PDF §3]**. Our default list uses `defocus_blur`; if COD10K-C uses `gaussian_blur`, we should switch for comparability. `imagecorruptions` supports both.
-6. **`imagecorruptions` is broken on NumPy 2 / scikit-image ≥ 0.19** (`fog`, `gaussian_blur`). Fixed with a small compatibility shim in `src/corruptions.py`; no need for an old environment.
+5. **COD10K-C corruption list (resolved 2026-10-13, from the paper's §3 supplied by the student):** Gaussian noise, motion blur, Gaussian blur, brightness, contrast, fog, JPEG, rain, with explicit severity parameters (rain excepted). These are *not* ImageNet-C definitions, so `src/corruptions.py` re-implements them; see `docs/EXPLAINER.md` §2 for our assumptions.
+6. **`imagecorruptions` (now only used for the optional extended set) is broken on NumPy 2 / scikit-image ≥ 0.19** (`fog`, `gaussian_blur`). Fixed with a small compatibility shim in `src/corruptions.py`; no need for an old environment.
 
 ## 5. Pivot options (if contribution 1 gets scooped before submission)
 

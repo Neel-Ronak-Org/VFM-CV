@@ -22,7 +22,7 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
-from src.datasets import CODDataset, load_data_config, verify_dataset  # noqa: E402
+from src.datasets import MASK_SUBDIR_ALTERNATIVES, CODDataset, load_data_config, verify_dataset  # noqa: E402
 
 SOURCES = yaml.safe_load(open(REPO / "configs" / "sources.yaml"))
 TEST_SETS = ("CHAMELEON", "CAMO", "COD10K", "NC4K")
@@ -64,17 +64,17 @@ def safe_extract(archive: Path, target: Path) -> None:
     with zipfile.ZipFile(archive) as zf:
         for m in zf.infolist():
             p = (target / m.filename).resolve()
-            if not str(p).startswith(str(target)):
+            if not p.is_relative_to(target):
                 raise RuntimeError(f"unsafe path in archive: {m.filename}")
         zf.extractall(target)
 
 
 def find_split_dirs(root: Path) -> dict[str, Path]:
-    """Locate folders that contain Imgs/ + GT/ and guess which dataset they are."""
+    """Locate folders that contain Imgs/ + a mask folder and guess which dataset they are."""
     found = {}
-    for imgs in root.rglob("Imgs"):
+    for imgs in sorted(root.rglob("Imgs")):
         d = imgs.parent
-        if not (d / "GT").is_dir() or "__MACOSX" in d.parts:
+        if not any((d / m).is_dir() for m in MASK_SUBDIR_ALTERNATIVES) or "__MACOSX" in d.parts:
             continue
         parts = [p.upper() for p in d.relative_to(root).parts] or [root.name.upper()]
         for t in TEST_SETS:
@@ -85,16 +85,16 @@ def find_split_dirs(root: Path) -> dict[str, Path]:
     return found
 
 
-def organise(extract_root: Path) -> None:
+def organise(extract_root: Path, raw: Path | None = None) -> None:
     cfg = load_data_config()
-    raw = REPO / cfg["root"]
+    raw = raw or REPO / cfg["root"]
     for key, src in find_split_dirs(extract_root).items():
         dst = raw / (cfg["train"]["dir"] if key == "train" else cfg["test"][key]["dir"])
         if dst.exists():
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(src), str(dst))
-        print(f"[ok] {key} -> {dst.relative_to(REPO)}")
+        print(f"[ok] {key} -> {dst}")
 
 
 def do_data() -> None:

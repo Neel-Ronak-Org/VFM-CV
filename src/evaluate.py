@@ -58,6 +58,8 @@ def resolve_conditions(spec: list[str], severities: list[int], protocol: dict) -
             names += protocol["corruptions"]
         elif s in ("seen", "unseen"):
             names += protocol[s]
+        elif s == "extended":
+            names += protocol.get("extended_unseen", [])
         else:
             names.append(s)
     conds = []
@@ -92,7 +94,7 @@ def main(argv=None):
     ap.add_argument("--models", nargs="+", required=True)
     ap.add_argument("--datasets", nargs="+", default=["COD10K"])
     ap.add_argument("--corruptions", nargs="+", default=["clean"],
-                    help="'clean', 'all', 'seen', 'unseen' or corruption names")
+                    help="'clean', 'all' (8 COD10K-C corruptions), 'seen', 'unseen', 'extended' or names")
     ap.add_argument("--severities", nargs="+", type=int, default=None)
     ap.add_argument("--out", default="results/benchmark.csv")
     ap.add_argument("--data-root", default=None)

@@ -1,20 +1,52 @@
-# Corruption protocol (single source of truth).
-# Implementation: imagecorruptions (ImageNet-C, Hendrycks & Dietterich 2019) via src/corruptions.py.
+# Corruption protocol (single source of truth). Implemented in src/corruptions.py.
 #
-# TODO(Phase 3): check Section 3 of COD10K-C (arXiv:2606.02603). If it lists its 8 types,
-# match them here. Search snippets confirm it uses motion blur AND Gaussian blur, so
-# `defocus_blur` may need to become `gaussian_blur`.
+# The 8 core corruptions and their 5 severity parameters follow COD10K-C
+# (Sayem, arXiv:2606.02603, Sec. 3), so our numbers are comparable with theirs.
+# Text of Sec. 3 was supplied by the student on 2026-10-13. Exact implementation details
+# that the paper does not state (library, clipping, rain) are OUR assumptions and are
+# listed in docs/EXPLAINER.md §2 "Assumptions".
 
 severities: [1, 2, 3, 4, 5]
 base_seed: 20261013
 
-families:
-  noise:       [gaussian_noise, shot_noise]
-  blur:        [defocus_blur, motion_blur]
-  photometric: [brightness, contrast, fog]
-  digital:     [jpeg_compression]
+# name -> list of 5 parameters (severity 1..5), as stated in COD10K-C.
+params:
+  gaussian_noise:   [8, 16, 24, 32, 40]               # sigma, in 0-255 pixel units
+  motion_blur:      [3, 5, 7, 9, 11]                  # horizontal kernel length k (px)
+  gaussian_blur:    [0.8, 1.2, 1.6, 2.0, 2.5]         # PIL GaussianBlur radius (px)
+  brightness:       [0.85, 0.70, 0.55, 0.40, 0.30]    # brightness factor (multiplicative)
+  contrast:         [0.85, 0.70, 0.55, 0.40, 0.30]    # contrast factor (PIL ImageEnhance)
+  fog:              [0.12, 0.20, 0.28, 0.36, 0.44]    # alpha, additive blend with white
+  jpeg_compression: [70, 55, 40, 30, 20]              # JPEG quality
+  rain:                                               # NOT specified numerically in COD10K-C;
+    - {density: 0.002, length: 10}                    # our own approximation. density = fraction
+    - {density: 0.004, length: 15}                    # of pixels seeding a streak; length in px.
+    - {density: 0.006, length: 20}
+    - {density: 0.008, length: 25}
+    - {density: 0.010, length: 30}
 
-# Held-out protocol (contribution 3): one "seen" corruption per family is used for
-# training augmentation; the rest are never seen during training.
-seen:   [gaussian_noise, defocus_blur, brightness, jpeg_compression]
-unseen: [shot_noise, motion_blur, fog, contrast]
+# COD10K-C's own grouping (as stated in the paper).
+families_codc:
+  geometric:   [gaussian_noise, motion_blur, gaussian_blur]
+  photometric: [brightness, contrast, fog, jpeg_compression, rain]
+
+# Finer grouping used for our held-out protocol (contribution 3).
+families:
+  noise:        [gaussian_noise]
+  blur:         [gaussian_blur, motion_blur]
+  illumination: [brightness, contrast]
+  weather:      [fog, rain]
+  digital:      [jpeg_compression]
+
+# Held-out protocol: training augmentation may only use "seen" corruptions.
+# Reasoning: one seen member per family where the family has >1 member, so every unseen
+# corruption has a *related* seen one (gaussian->motion blur, brightness->contrast)
+# except weather, which is fully held out to test cross-family transfer.
+# Noise and JPEG have a single member each, so they are seen; unseen noise is covered by
+# the optional `extended_unseen` set below.
+seen:   [gaussian_noise, gaussian_blur, brightness, jpeg_compression]
+unseen: [motion_blur, contrast, fog, rain]
+
+# Optional extra unseen corruptions from ImageNet-C (imagecorruptions package, its own
+# severity definitions). Not part of the COD10K-C-comparable benchmark; run only if time allows.
+extended_unseen: [shot_noise, defocus_blur, zoom_blur, pixelate]

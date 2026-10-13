@@ -14,7 +14,7 @@ This turns `CLAUDE.md` into concrete steps, says where each step runs, and flags
 | D | **Compute budget.** The variant list (3 main + 3 λ + LoRA + FPN + 2 extra seeds ≈ 10 runs) in about 24 GPU-hours means ≈ 2.4 h/run. At 1024 px with a clean+corrupted pair per sample this is too tight. | Profile first. Default plan: **512 px** training (rung 3 of the VRAM ladder) with **cached features not possible for corrupted views**, so instead: 20 epochs, and prioritise runs (main 3 → λ sweep → seeds → LoRA/FPN). Log the 512-vs-1024 accuracy cost on one run. |
 | E | **Benchmark compute & disk.** 40 corruption conditions × (2,026 COD10K + 250 CAMO + 4,121 NC4K) ≈ 256k images per model. ViT-H SAM-Adapter at ~2–3 FPS ≈ 30 h for COD10K alone **[estimate, verify]**. Stored corrupted sets ≈ 30–60 GB. | (i) Full grid for COD10K-test for every model; CAMO + NC4K for fast models only (SINet-V2, ours, MobileSAM-based, SAM2-UNet if fast). (ii) Generate corruptions **on the fly with deterministic per-image seeds** (bit-identical to stored versions, verified by test) and only cache to disk if CPU becomes the bottleneck. This keeps "generate once, fixed seeds" reproducibility without 60 GB of files. |
 
-Also: `imagecorruptions` breaks on NumPy 2 (fixed with a shim), and the exact COD10K-C corruption list must be read from its PDF (§3) by the student, because arXiv is blocked here.
+Also: COD10K-C's §3 (supplied by the student) defines its own corruption parameters, so we re-implement them rather than using ImageNet-C. `imagecorruptions` is kept for an optional extended unseen set (NumPy-2 shim included).
 
 ## 1. Phase-by-phase plan
 
@@ -43,7 +43,7 @@ Also: `imagecorruptions` breaks on NumPy 2 (fixed with a shim), and the exact CO
 - 🛑 **CHECKPOINT 2.**
 
 ### Phase 3 – Corruption benchmark *(laptop)*
-- Corruptions: 8 types × 5 severities; seen = {gaussian_noise, defocus_blur (or gaussian_blur), brightness, jpeg_compression}; unseen = {shot_noise, motion_blur, fog, contrast}. Defined once in `configs/corruptions.yaml`.
+- Corruptions: the 8 COD10K-C types × 5 severities (re-implemented from the paper's stated parameters; rain is our approximation). Seen = {gaussian_noise, gaussian_blur, brightness, jpeg_compression}; unseen = {motion_blur, contrast, fog, rain}; optional ImageNet-C `extended_unseen`. Defined once in `configs/corruptions.yaml`.
 - Per-image seed = hash(dataset, image name, corruption, severity) → identical output on any machine.
 - `src/evaluate.py` resumable; appends to `results/benchmark.csv`.
 - `scripts/summarize.py` → mCorr, retention (seen / unseen), optional mCE vs SINet-V2.
