@@ -68,9 +68,11 @@ weights:
     manual: "Download PFNet.pth from https://mhaiyang.github.io/CVPR2021_PFNet/index.html"
     dest: checkpoints/pfnet/PFNet.pth
   feder:
-    source: https://github.com/ChunmingHe/FEDER   # README §4 "well-trained model"
+    source: https://github.com/ChunmingHe/FEDER   # README §4 "well-trained model" (the only official copy)
     gdrive_id: 1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc
+    manual: "https://drive.google.com/file/d/1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc/view (if dead: FEDER becomes 'clean only' from its released maps, CLAUDE.md §6)"
     dest: checkpoints/feder/FEDER.pth
+    note: "2026-10-14: student reports the Drive link does not work. No mirror found. Do NOT use 1OmE2vE... (README §3): that is the training-init backbone, not the trained model."
   sam_adapter:
     source: https://github.com/tianrun-chen/SAM-Adapter-PyTorch
     gdrive_id: 13JilJT7dhxwMIgcdtnvdzr08vcbREFlR
@@ -90,7 +92,7 @@ weights:
   efficient_sam_vitt:
     optional: true   # Phase 4 fallback backbone only
     source: https://github.com/yformer/EfficientSAM
-    url: https://github.com/yformer/EfficientSAM/raw/main/weights/efficient_sam_vitt.pt
+    url: https://raw.githubusercontent.com/yformer/EfficientSAM/main/weights/efficient_sam_vitt.pt   # direct (github.com/raw redirects); verified to serve the real file
     dest: checkpoints/efficient_sam/efficient_sam_vitt.pt
   # Not available (no COD-trained weights released as of 2026-10-13):
   #   SAM2-Adapter (branch SAM2-Adapter-for-Segment-Anything-2) - training only, needs ~4xA100
