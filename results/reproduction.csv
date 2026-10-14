@@ -3,3 +3,15 @@ SINet-V2,CHAMELEON,0.888064,0.941431,0.815847,0.029758,76,fp32,0.888,0.0001,True
 SINet-V2,CAMO,0.820405,0.882126,0.74269,0.070305,250,fp32,0.82,0.0004,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
 SINet-V2,COD10K,0.815154,0.887131,0.679718,0.036775,2026,fp32,0.815,0.0002,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
 SINet-V2,NC4K,0.846976,0.902319,0.769382,0.047723,4121,fp32,0.847,-0.0,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
+ZoomNet,CHAMELEON,0.901913,0.942731,0.843826,0.02311,76,fp32,0.902,-0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
+ZoomNet,CAMO,0.820079,0.877182,0.751493,0.066099,250,fp32,0.82,0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
+ZoomNet,COD10K,0.838516,0.887702,0.727151,0.029154,2026,fp32,0.838,0.0005,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
+ZoomNet,NC4K,0.853071,0.896269,0.783587,0.043505,4121,fp32,,,,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
+SAM2-UNet,CHAMELEON,0.913883,0.961829,0.86471,0.021782,76,fp16,0.914,-0.0001,True,https://arxiv.org/html/2408.08870
+SAM2-UNet,CAMO,0.883527,0.931743,0.845347,0.04216,250,fp16,0.884,-0.0005,True,https://arxiv.org/html/2408.08870
+SAM2-UNet,COD10K,0.879885,0.937369,0.801436,0.020764,2026,fp16,0.88,-0.0001,True,https://arxiv.org/html/2408.08870
+SAM2-UNet,NC4K,0.900652,0.941087,0.857797,0.029259,4121,fp16,0.901,-0.0003,True,https://arxiv.org/html/2408.08870
+Oracle-Box-MobileSAM,CHAMELEON,0.786893,0.816114,0.669681,0.108649,76,fp32,,,,
+Oracle-Box-MobileSAM,CAMO,0.826958,0.845777,0.74572,0.095489,250,fp32,,,,
+Oracle-Box-MobileSAM,COD10K,0.827252,0.864176,0.71282,0.065481,2026,fp32,,,,
+Oracle-Box-MobileSAM,NC4K,0.850308,0.879576,0.769602,0.072235,4121,fp32,,,,
