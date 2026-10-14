@@ -199,3 +199,11 @@ python scripts/download_data.py --weights          # re-fetches only what is mis
 python scripts/download_data.py --maps             # SINet-V2 + ZoomNet maps (single zips)
 python scripts/run_clean_baselines.py              # resumable
 ```
+
+### Session 5b — weights status from the laptop (`--check-weights`)
+- OK: SINet-V2, ZoomNet (901 tensors), MobileSAM, SAM2-UNet `SAM2UNet-COD.pth` (1192 tensors).
+- **SAM-Adapter: CORRUPT** (UnpicklingError) → delete + re-download (browser if gdown fails again).
+- Missing: FEDER (gdown), PFNet (manual, project page).
+- **Mistake (mine):** the SAM2-UNet Drive-folder download pulled all 7 task checkpoints (~5.8 GB) — breaks the "ask before >5 GB" rule. Fixed: SAM2-UNet is now manual-only with `satisfied_by: SAM2UNet-COD.pth`, so the folder is never re-fetched; the six non-COD checkpoints can be deleted.
+- `res2net50` (training only) and `efficient_sam_vitt` (Phase 4 fallback) marked optional: not fetched by default, not reported as missing.
+- `--check-weights` now says *why* a file is corrupt (HTML page from Drive vs truncated).

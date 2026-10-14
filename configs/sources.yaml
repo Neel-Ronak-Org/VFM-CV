@@ -36,12 +36,11 @@ prediction_maps:
     extract_to: data/released_maps/FEDER
   sam2_unet:
     optional: true
-    desc: "SAM2-UNet prediction maps live in the same Drive folder as its weights (downloaded once)"
+    desc: "SAM2-UNet prediction maps (same Drive folder as its weights)"
     source: https://github.com/WZH0120/SAM2-UNet
-    gdrive_folder: 1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev
-    dest: checkpoints/sam2_unet/
+    manual: "Open https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev in a browser and download only the COD prediction maps"
+    dest: data/released_maps/SAM2-UNet/
     extract_to: data/released_maps/SAM2-UNet
-    note: "gdown cannot list Drive folders with >50 files; if it fails, download the COD maps archive manually"
   sinet_v2:
     desc: "SINet-V2 PyTorch prediction maps on CHAMELEON, CAMO, COD10K, NC4K"
     source: https://github.com/GewelsJI/SINet-V2   # README 'results' link (PyTorch)
@@ -55,6 +54,7 @@ weights:
     gdrive_id: 1D3RKQ8Nzd0ArV_c47StVKEuaoYTwnclR
     dest: checkpoints/sinet_v2/Net_epoch_best.pth
   res2net50:
+    optional: true   # only needed to TRAIN SINet-V2; never needed in this project
     desc: "ImageNet Res2Net-50 (only needed to train SINet-V2; not for inference)"
     source: https://github.com/GewelsJI/SINet-V2
     gdrive_id: 1QumnqSY_2wa-81-Ti0X1-jQzaGDIfa9r
@@ -75,18 +75,20 @@ weights:
     source: https://github.com/tianrun-chen/SAM-Adapter-PyTorch
     gdrive_id: 13JilJT7dhxwMIgcdtnvdzr08vcbREFlR
     dest: checkpoints/sam_adapter/model_epoch_best.pth
-    note: "Backbone size (ViT-B/L/H) to be confirmed after download"
+    manual: "Open https://drive.google.com/file/d/13JilJT7dhxwMIgcdtnvdzr08vcbREFlR/view in a browser, click Download (confirm 'Download anyway' if Drive warns it can't scan large files), save as checkpoints/sam_adapter/model_epoch_best.pth"
+    note: "Large file (ViT-H, ~2.5 GB expected); backbone auto-detected by the wrapper"
   sam2_unet:
     source: https://github.com/WZH0120/SAM2-UNet   # README: "pre-trained models and prediction maps"
-    gdrive_folder: 1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev
-    manual: "Open https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev and download the camouflaged-object checkpoint (.pth) into checkpoints/sam2_unet/"
+    # Manual only: the Drive folder holds 7 task checkpoints (~5.8 GB) plus prediction maps; we need one file.
+    manual: "Open https://drive.google.com/drive/folders/1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev, open 'Pretrained checkpoints' and download only SAM2UNet-COD.pth (~830 MB) into checkpoints/sam2_unet/"
     dest: checkpoints/sam2_unet/
-    note: "The folder also holds prediction maps and other tasks' checkpoints; the wrapper picks the file with cod/camo in its name"
+    satisfied_by: "SAM2UNet-COD.pth"
   mobile_sam:
     source: https://github.com/ChaoningZhang/MobileSAM
     url: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt
     dest: checkpoints/mobile_sam/mobile_sam.pt
   efficient_sam_vitt:
+    optional: true   # Phase 4 fallback backbone only
     source: https://github.com/yformer/EfficientSAM
     url: https://github.com/yformer/EfficientSAM/raw/main/weights/efficient_sam_vitt.pt
     dest: checkpoints/efficient_sam/efficient_sam_vitt.pt
