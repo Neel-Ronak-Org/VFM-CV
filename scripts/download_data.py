@@ -40,12 +40,35 @@ def _manual(entry: dict, dest: Path, err: Exception) -> None:
           f"  1. Open: {link}\n  2. Save it to: {dest}\n  3. Re-run this script.\n")
 
 
+def _satisfied(entry: dict) -> bool:
+    """For folder destinations that only need one specific file (e.g. SAM2UNet-COD.pth)."""
+    pat = entry.get("satisfied_by")
+    dest = REPO / entry["dest"]
+    return bool(pat) and dest.exists() and any(dest.rglob(pat))
+
+
+def _weight_files(entry: dict) -> list[Path]:
+    dest = REPO / entry["dest"]
+    if not dest.exists():
+        return []
+    if dest.suffix:
+        return [dest]
+    pat = entry.get("satisfied_by")
+    return sorted(dest.rglob(pat)) if pat else sorted([*dest.rglob("*.pth"), *dest.rglob("*.pt")])
+
+
 def fetch(entry: dict) -> Path | None:
     """Download one source. Crash-safe: single files are written to <dest>.part and renamed only
     when complete; Drive folders are marked complete only if every file arrived."""
     dest = REPO / entry["dest"]
+    if _satisfied(entry):
+        print(f"[ok] {dest.relative_to(REPO)} has {entry['satisfied_by']}")
+        return dest
     if "gdrive_folder" in entry:
         return _fetch_folder(entry, dest)
+    if not any(k in entry for k in ("gdrive_id", "url")):
+        _manual(entry, dest, RuntimeError("manual download required"))
+        return None
     if dest.exists():
         print(f"[ok] {dest.relative_to(REPO)} already present")
         return dest
@@ -102,12 +125,13 @@ def check_weights() -> bool:
 
     ok_all = True
     for name, entry in SOURCES["weights"].items():
-        dest = REPO / entry["dest"]
-        files = ([dest] if dest.suffix else sorted([*dest.rglob("*.pth"), *dest.rglob("*.pt")])) if dest.exists() else []
-        files = [f for f in files if f.exists()]
+        files = _weight_files(entry)
         if not files:
-            print(f"[missing] {name:18s} -> {entry['dest']}")
-            ok_all = False
+            if entry.get("optional"):
+                print(f"[optional] {name:18s} not downloaded (not needed now)")
+            else:
+                print(f"[missing] {name:18s} -> {entry['dest']}" + (f" ({entry['satisfied_by']})" if entry.get("satisfied_by") else ""))
+                ok_all = False
             continue
         for f in files:
             try:
@@ -116,7 +140,11 @@ def check_weights() -> bool:
                 print(f"[ok]      {name:18s} {f.relative_to(REPO)}  ({f.stat().st_size / 2**20:.0f} MB, {n} tensors)")
             except Exception as e:  # noqa: BLE001
                 ok_all = False
-                print(f"[CORRUPT] {name:18s} {f.relative_to(REPO)}  ({type(e).__name__}) -> delete it and re-download")
+                head = f.read_bytes()[:64]
+                why = ("an HTML page, not a checkpoint (Google Drive quota/virus-scan page)"
+                       if head.lstrip().startswith(b"<") else f"{type(e).__name__}; probably truncated")
+                print(f"[CORRUPT] {name:18s} {f.relative_to(REPO)}  ({f.stat().st_size / 2**20:.1f} MB): {why}"
+                      " -> delete it and download again (browser if gdown keeps failing)")
     return ok_all
 
 
@@ -216,7 +244,7 @@ def main() -> None:
     if args.data:
         do_data()
     if args.weights is not None:
-        for w in args.weights or SOURCES["weights"]:
+        for w in args.weights or [k for k, v in SOURCES["weights"].items() if not v.get("optional")]:
             fetch(SOURCES["weights"][w])
     if args.maps is not None:
         default = [k for k, v in SOURCES["prediction_maps"].items() if not v.get("optional")]
