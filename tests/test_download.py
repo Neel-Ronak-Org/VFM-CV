@@ -74,3 +74,27 @@ def test_fetch_is_crash_safe_and_folder_needs_marker(tmp_path, monkeypatch):
     monkeypatch.setattr(gdown, "download_folder", lambda **kw: [str(folder / "a.png")])
     assert dd.fetch({"gdrive_folder": "id", "dest": "maps/"}) == folder
     assert (folder / dd.COMPLETE_MARKER).exists()
+
+
+def test_satisfied_by_prevents_folder_redownload(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(dd, "REPO", tmp_path)
+    entry = {"dest": "ck/", "satisfied_by": "SAM2UNet-COD.pth", "manual": "browser"}
+    assert dd.fetch(entry) is None                                   # manual-only, nothing there yet
+    (tmp_path / "ck" / "Pretrained checkpoints").mkdir(parents=True)
+    (tmp_path / "ck" / "Pretrained checkpoints" / "SAM2UNet-COD.pth").write_bytes(b"x")
+    (tmp_path / "ck" / "Pretrained checkpoints" / "SAM2UNet-SOD.pth").write_bytes(b"x")
+    assert dd.fetch(entry) == tmp_path / "ck"
+    assert [f.name for f in dd._weight_files(entry)] == ["SAM2UNet-COD.pth"]   # other tasks ignored
+
+
+def test_check_weights_detects_html_page(tmp_path, monkeypatch, capsys):
+    import torch
+    monkeypatch.setattr(dd, "REPO", tmp_path)
+    (tmp_path / "w").mkdir()
+    torch.save({"a": torch.zeros(1)}, tmp_path / "w" / "good.pth")
+    (tmp_path / "w" / "bad.pth").write_bytes(b"<!DOCTYPE html><html>Google Drive - Virus scan warning")
+    monkeypatch.setattr(dd, "SOURCES", {"weights": {
+        "good": {"dest": "w/good.pth"}, "bad": {"dest": "w/bad.pth"}, "opt": {"dest": "w/none.pth", "optional": True}}})
+    assert dd.check_weights() is False
+    out = capsys.readouterr().out
+    assert "[ok]      good" in out and "HTML page" in out and "[optional] opt" in out
