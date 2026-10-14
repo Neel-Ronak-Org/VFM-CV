@@ -47,3 +47,30 @@ def test_rejects_path_traversal(tmp_path):
     except RuntimeError:
         pass
     assert not (tmp_path / "escape.txt").exists()
+
+
+def test_fetch_is_crash_safe_and_folder_needs_marker(tmp_path, monkeypatch):
+    import urllib.request
+    monkeypatch.setattr(dd, "REPO", tmp_path)
+
+    def boom(url, path):  # simulate a crash halfway through writing
+        Path(path).write_bytes(b"half")
+        raise ConnectionError("cut")
+    monkeypatch.setattr(urllib.request, "urlretrieve", boom)
+    assert dd.fetch({"url": "http://x", "dest": "w/model.pth"}) is None
+    assert not (tmp_path / "w" / "model.pth").exists()          # no truncated file left behind
+    assert not (tmp_path / "w" / "model.pth.part").exists()
+
+    folder = tmp_path / "maps"
+    folder.mkdir()
+    (folder / "a.png").write_bytes(b"x")                       # partial folder from an earlier crash
+    import gdown
+
+    def fail_folder(**kw):
+        raise RuntimeError("rate limit")
+    monkeypatch.setattr(gdown, "download_folder", fail_folder)
+    assert dd.fetch({"gdrive_folder": "id", "dest": "maps/"}) is None  # NOT treated as complete
+    assert (folder / "a.png").exists()                          # partial files kept for resume
+    monkeypatch.setattr(gdown, "download_folder", lambda **kw: [str(folder / "a.png")])
+    assert dd.fetch({"gdrive_folder": "id", "dest": "maps/"}) == folder
+    assert (folder / dd.COMPLETE_MARKER).exists()
