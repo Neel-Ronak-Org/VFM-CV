@@ -34,6 +34,8 @@ def build(bench_csv: Path, maps_csv: Path, reported_yaml: Path) -> pd.DataFrame:
             if len(m):
                 row["Sm_released_maps"] = float(m.Sm.iloc[0])
                 row["delta_Sm_vs_released_maps"] = round(r.Sm - float(m.Sm.iloc[0]), 4)
+                # incomplete map sets (e.g. an interrupted download) are not a valid reference
+                row["released_maps_missing"] = int(m.n_missing.iloc[0]) if "n_missing" in m else 0
         row["reported_source"] = "; ".join(rep.get(r.model, {}).get("verified_urls", []))
         rows.append(row)
     return pd.DataFrame(rows)

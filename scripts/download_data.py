@@ -3,7 +3,8 @@
     python scripts/download_data.py --data            # train + test packages (+ NC4K if missing)
     python scripts/download_data.py --weights sinet_v2 mobile_sam
     python scripts/download_data.py --verify          # counts, pairing, sizes, mask binarity
-    python scripts/download_data.py --maps sinet_v2   # officially released prediction maps
+    python scripts/download_data.py --maps            # released prediction maps (single archives only)
+    python scripts/download_data.py --check-weights   # which checkpoints are present / intact
 
 If a Google Drive download fails (quota/permission), the script prints the link and
 the exact path to save the file to. Re-run it afterwards and it will extract and
@@ -29,45 +30,94 @@ SOURCES = yaml.safe_load(open(REPO / "configs" / "sources.yaml"))
 TEST_SETS = ("CHAMELEON", "CAMO", "COD10K", "NC4K")
 
 
+COMPLETE_MARKER = ".download_complete"
+
+
+def _manual(entry: dict, dest: Path, err: Exception) -> None:
+    link = entry.get("manual") or (f"https://drive.google.com/file/d/{entry['gdrive_id']}/view"
+                                   if "gdrive_id" in entry else entry.get("url"))
+    print(f"\n[MANUAL] Could not download automatically ({err}).\n"
+          f"  1. Open: {link}\n  2. Save it to: {dest}\n  3. Re-run this script.\n")
+
+
 def fetch(entry: dict) -> Path | None:
+    """Download one source. Crash-safe: single files are written to <dest>.part and renamed only
+    when complete; Drive folders are marked complete only if every file arrived."""
     dest = REPO / entry["dest"]
-    if dest.suffix == "":  # folder destination
-        dest.mkdir(parents=True, exist_ok=True)
-        if any(p.is_file() for p in dest.rglob("*")):
-            print(f"[ok] {dest.relative_to(REPO)} already has files")
-            return dest
-    elif dest.exists():
+    if "gdrive_folder" in entry:
+        return _fetch_folder(entry, dest)
+    if dest.exists():
         print(f"[ok] {dest.relative_to(REPO)} already present")
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
+    part = dest.with_name(dest.name + ".part")
     try:
-        if "gdrive_folder" in entry:
-            import gdown
-
-            out = gdown.download_folder(id=entry["gdrive_folder"], output=str(dest), quiet=False)
-            if not out:
-                raise RuntimeError("gdown.download_folder returned nothing")
-            return dest
         if "gdrive_id" in entry:
             import gdown
 
-            out = gdown.download(id=entry["gdrive_id"], output=str(dest), quiet=False)
-            if out is None:
+            if gdown.download(id=entry["gdrive_id"], output=str(part), quiet=False, retries=3) is None:
                 raise RuntimeError("gdown returned None")
         elif "url" in entry:
             print(f"downloading {entry['url']}")
-            urllib.request.urlretrieve(entry["url"], dest)
+            urllib.request.urlretrieve(entry["url"], part)
         else:
             raise RuntimeError("manual download required")
+        if not part.exists() or part.stat().st_size == 0:
+            raise RuntimeError("empty download")
+        part.replace(dest)
         return dest
     except Exception as e:  # noqa: BLE001
-        link = entry.get("manual") or (f"https://drive.google.com/file/d/{entry['gdrive_id']}/view"
-                                       if "gdrive_id" in entry else entry.get("url"))
-        print(f"\n[MANUAL] Could not download automatically ({e}).\n"
-              f"  1. Open: {link}\n  2. Save the file to: {dest}\n  3. Re-run this script.\n")
-        if dest.exists() and dest.stat().st_size == 0:
-            dest.unlink()
+        part.unlink(missing_ok=True)
+        _manual(entry, dest, e)
         return None
+
+
+def _fetch_folder(entry: dict, dest: Path) -> Path | None:
+    marker = dest / COMPLETE_MARKER
+    if marker.exists():
+        print(f"[ok] {dest.relative_to(REPO)} complete")
+        return dest
+    dest.mkdir(parents=True, exist_ok=True)
+    try:
+        import gdown
+
+        # gdown keeps going past failed files and raises DownloadError listing them at the end.
+        out = gdown.download_folder(id=entry["gdrive_folder"], output=str(dest), quiet=False,
+                                    resume=True, retries=3)
+        missing = [f for f in (out or []) if f is None or not Path(f).exists()]
+        if not out or missing:
+            raise RuntimeError(f"{len(missing)} file(s) failed (Google Drive rate limit?)")
+        marker.write_text("ok\n")
+        return dest
+    except Exception as e:  # noqa: BLE001
+        print(f"[partial] {dest.relative_to(REPO)} is incomplete; files that did arrive are kept. "
+              "Re-running later resumes; or download the folder in a browser (Drive zips it).")
+        _manual(entry, dest, e)
+        return None
+
+
+def check_weights() -> bool:
+    """Try to load every weights file that is present; report missing/corrupt ones."""
+    import torch
+
+    ok_all = True
+    for name, entry in SOURCES["weights"].items():
+        dest = REPO / entry["dest"]
+        files = ([dest] if dest.suffix else sorted([*dest.rglob("*.pth"), *dest.rglob("*.pt")])) if dest.exists() else []
+        files = [f for f in files if f.exists()]
+        if not files:
+            print(f"[missing] {name:18s} -> {entry['dest']}")
+            ok_all = False
+            continue
+        for f in files:
+            try:
+                sd = torch.load(f, map_location="cpu", weights_only=False)
+                n = len(sd.get("state_dict", sd)) if isinstance(sd, dict) else "?"
+                print(f"[ok]      {name:18s} {f.relative_to(REPO)}  ({f.stat().st_size / 2**20:.0f} MB, {n} tensors)")
+            except Exception as e:  # noqa: BLE001
+                ok_all = False
+                print(f"[CORRUPT] {name:18s} {f.relative_to(REPO)}  ({type(e).__name__}) -> delete it and re-download")
+    return ok_all
 
 
 def safe_extract(archive: Path, target: Path) -> None:
@@ -156,9 +206,11 @@ def main() -> None:
     ap.add_argument("--data", action="store_true")
     ap.add_argument("--weights", nargs="*", help=f"any of: {', '.join(SOURCES['weights'])}")
     ap.add_argument("--verify", action="store_true")
-    ap.add_argument("--maps", nargs="*", help=f"released prediction maps: {', '.join(SOURCES['prediction_maps'])}")
+    ap.add_argument("--maps", nargs="*", help=f"released prediction maps: {', '.join(SOURCES['prediction_maps'])}. "
+                    "With no names, only non-optional (single-archive) sources are fetched.")
+    ap.add_argument("--check-weights", action="store_true")
     args = ap.parse_args()
-    if not (args.data or args.weights is not None or args.verify or args.maps is not None):
+    if not (args.data or args.weights is not None or args.verify or args.maps is not None or args.check_weights):
         ap.print_help()
         return
     if args.data:
@@ -167,7 +219,8 @@ def main() -> None:
         for w in args.weights or SOURCES["weights"]:
             fetch(SOURCES["weights"][w])
     if args.maps is not None:
-        for m in args.maps or SOURCES["prediction_maps"]:
+        default = [k for k, v in SOURCES["prediction_maps"].items() if not v.get("optional")]
+        for m in args.maps or default:
             entry = SOURCES["prediction_maps"][m]
             arc = fetch(entry)
             archives = ([arc] if arc and arc.is_file() else sorted(arc.rglob("*.zip")) if arc else [])
@@ -175,8 +228,12 @@ def main() -> None:
                 if zipfile.is_zipfile(a):
                     safe_extract(a, REPO / entry["extract_to"])
                     print(f"[ok] {m}: {a.name} -> {entry['extract_to']}")
+    ok = True
+    if args.check_weights:
+        ok &= check_weights()
     if args.verify:
-        sys.exit(0 if do_verify() else 1)
+        ok &= do_verify()
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

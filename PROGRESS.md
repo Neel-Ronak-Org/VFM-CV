@@ -173,3 +173,29 @@ Then 🛑 **CHECKPOINT 2** (full reproduction table).
 - SAM-Adapter checkpoint backbone unknown until downloaded (auto-detected); ViT-H fp16 at 1024 should fit in 4 GB but is unverified.
 - SAM-Adapter's published numbers are computed at 1024x1024 with its own metric code → expect a small gap.
 - FEDER published S-alpha not confirmed; relies on released-maps comparison.
+
+---
+
+## Session 5 — 2026-10-14 (Claude, cloud container)
+
+### From the student
+- PR #4 merged. Laptop **crashed** during the Phase 2 downloads. Most `.pth` files arrived. The FEDER prediction-maps folder failed repeatedly: gdown "Cannot retrieve the public link ... had many accesses" = Google Drive per-file rate limit (the folder is thousands of individual PNGs).
+
+### Done (download robustness)
+- Single-file downloads write to `<dest>.part` and are renamed only when complete → a crash can't leave a truncated checkpoint that later runs would skip.
+- Drive folders are marked complete (`.download_complete`) only if every file arrived; partial folders are kept and resumed (`resume=True`, `retries=3`) instead of being treated as done.
+- `--maps` with no names now fetches only single-archive sources (SINet-V2, ZoomNet). FEDER / SAM2-UNet map folders are `optional` (browser download recommended).
+- `--check-weights`: loads every checkpoint that is present and flags missing or corrupt ones.
+- `make_reproduction.py` records `released_maps_missing` so an incomplete map set isn't mistaken for a valid reference.
+- Found and fixed: gdown 6.4.2 has no `remaining_ok` argument (it raises at the end listing failed files instead).
+- 60 tests pass.
+
+### Next (student)
+See the recovery steps in the reply / below:
+```powershell
+git checkout main ; git pull
+python scripts/download_data.py --check-weights
+python scripts/download_data.py --weights          # re-fetches only what is missing
+python scripts/download_data.py --maps             # SINet-V2 + ZoomNet maps (single zips)
+python scripts/run_clean_baselines.py              # resumable
+```

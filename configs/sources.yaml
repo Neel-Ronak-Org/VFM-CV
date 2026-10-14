@@ -28,12 +28,14 @@ prediction_maps:
     dest: data/raw/downloads/ZoomNet_maps.zip
     extract_to: data/released_maps/ZoomNet
   feder:
+    optional: true   # thousands of single PNGs on Drive -> gdown hits the rate limit; download in a browser instead
     desc: "FEDER prediction maps (Google Drive folder, README §6)"
     source: https://github.com/ChunmingHe/FEDER
     gdrive_folder: 1Pho42bHiBhVR0l9KzdOFQgqLzr8mSv9e
     dest: data/released_maps/FEDER/
     extract_to: data/released_maps/FEDER
   sam2_unet:
+    optional: true
     desc: "SAM2-UNet prediction maps live in the same Drive folder as its weights (downloaded once)"
     source: https://github.com/WZH0120/SAM2-UNet
     gdrive_folder: 1w2fK8kLhtEmMWZ6G6w9_J17xwgfm3lev
