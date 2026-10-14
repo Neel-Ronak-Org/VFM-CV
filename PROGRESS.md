@@ -207,3 +207,22 @@ python scripts/run_clean_baselines.py              # resumable
 - **Mistake (mine):** the SAM2-UNet Drive-folder download pulled all 7 task checkpoints (~5.8 GB) — breaks the "ask before >5 GB" rule. Fixed: SAM2-UNet is now manual-only with `satisfied_by: SAM2UNet-COD.pth`, so the folder is never re-fetched; the six non-COD checkpoints can be deleted.
 - `res2net50` (training only) and `efficient_sam_vitt` (Phase 4 fallback) marked optional: not fetched by default, not reported as missing.
 - `--check-weights` now says *why* a file is corrupt (HTML page from Drive vs truncated).
+
+---
+
+## Session 6 — 2026-10-14 (Claude, cloud container)
+
+### State (from results/ on main)
+- Clean results: SINet-V2, ZoomNet, SAM2-UNet **reproduced** (all |ΔSα| ≤ 0.0005 where a published value is confirmed); Oracle-Box MobileSAM run (Sα 0.79–0.85, needs a visual sanity check).
+- Not yet in results: PFNet, SAM-Adapter (re-downloaded; checkpoint + released `config.yaml` now in `checkpoints/sam_adapter/`), FEDER clean-only (weights link dead → released maps), released-maps scores for SINet-V2 / ZoomNet.
+
+### Done
+- `scripts/check_phase2.py`: one command that checks data counts, that every required checkpoint loads, the released SAM-Adapter `config.yaml` against our wrapper's architecture (incl. the encoder's hard-coded adapter settings), released-map completeness, a clean result for every model × dataset (FEDER accepted as clean-only), and the reproduction tolerances. Prints the remaining commands and writes `results/phase2_status.md`. Exit 0 only when Phase 2 is complete.
+- 66 tests pass.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python scripts/check_phase2.py      # follow its "Still to run" list, then run it again
+git add results/ ; git commit -m "Phase 2 status" ; git push
+```
