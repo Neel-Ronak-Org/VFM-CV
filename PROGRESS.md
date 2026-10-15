@@ -226,3 +226,6 @@ git checkout main ; git pull
 python scripts/check_phase2.py      # follow its "Still to run" list, then run it again
 git add results/ ; git commit -m "Phase 2 status" ; git push
 ```
+
+### Parked idea (2026-10-15)
+- Student's idea for a follow-up: biologically inspired modules (V1 front end, contour integration / border ownership, recurrent top-down refinement) on a frozen backbone, tested with this project's benchmark. Written up in `docs/FUTURE_WORK.md`. **Not part of the current plan**; revisit after Phase 9.
