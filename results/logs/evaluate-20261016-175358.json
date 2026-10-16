@@ -1,0 +1,31 @@
+{
+  "git": "82ef7be",
+  "host": "LAPTOP-9RT095IQ",
+  "python": "3.11.17",
+  "args": {
+    "models": [
+      "SAM-Adapter"
+    ],
+    "datasets": [
+      "CHAMELEON"
+    ],
+    "corruptions": [
+      "clean"
+    ],
+    "severities": null,
+    "out": "results/samadapter_lowmem_check.csv",
+    "data_root": null,
+    "device": null,
+    "precision": "auto",
+    "limit": null,
+    "save_pred": 0
+  },
+  "conditions": [
+    [
+      "clean",
+      0
+    ]
+  ],
+  "out": "C:\\Users\\Ronak Daniel\\VFM-CV\\results\\samadapter_lowmem_check.csv",
+  "seconds": 222.2
+}

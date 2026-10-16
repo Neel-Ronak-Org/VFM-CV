@@ -1,0 +1,2 @@
+model,dataset,corruption,severity,Sm,Em,wFm,MAE,Dice,IoU,n_images,mean_latency_ms,precision,device,seconds,git,base_seed,timestamp
+SAM-Adapter,CHAMELEON,clean,0,0.895954,0.919365,0.830419,0.032285,0.865344,0.791356,76,2362.924476,fp16,cuda,207.8,82ef7be,20261013,2026-10-16 17:53:58

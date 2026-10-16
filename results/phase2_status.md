@@ -13,8 +13,8 @@
 [OK]   ZoomNet: checkpoints\zoomnet\cod_zoomnet_r50_bs8_e40_2022-03-04.pth (124 MB, 901 tensors)
 [INFO] FEDER: no weights (official link dead) -> clean-only from released maps, checked in §4/§5
 [OK]   SAM2-UNet: checkpoints\sam2_unet\Pretrained checkpoints\SAM2UNet-COD.pth (826 MB, 1192 tensors)
-[OK]   SAM-Adapter: checkpoints\sam_adapter\model_epoch_best.pth (2446 MB, 649 tensors)  
-[OK]   Oracle-Box-MobileSAM: checkpoints\mobile_sam\mobile_sam.pt (39 MB, 439 tensors)   
+[OK]   SAM-Adapter: checkpoints\sam_adapter\model_epoch_best.pth (2446 MB, 649 tensors)
+[OK]   Oracle-Box-MobileSAM: checkpoints\mobile_sam\mobile_sam.pt (39 MB, 439 tensors)
 
 ## 3. SAM-Adapter released config vs our wrapper
 [OK]   config matches the wrapper (embed_dim 1280, depth 32, inp_size 1024)
@@ -30,7 +30,7 @@
 [OK]   ZoomNet maps NC4K: 4121/4121 PNGs
 [OK]   FEDER maps CHAMELEON: 76/76 PNGs
 [OK]   FEDER maps CAMO: 250/250 PNGs
-[TODO] FEDER maps: no COD10K folder under data/released_maps/FEDER
+[INFO] FEDER maps COD10K: skipped - authors' released maps contain no COD10K folder and the weights link is dead (decision 2026-10-16: skip; FEDER is clean-only on CHAMELEON/CAMO/NC4K)
 [OK]   FEDER maps NC4K: 4121/4121 PNGs
 
 ## 5. Clean results
@@ -58,11 +58,12 @@
 [OK]   Oracle-Box-MobileSAM  CAMO      Sm=0.8270 (fp32)
 [OK]   Oracle-Box-MobileSAM  COD10K    Sm=0.8273 (fp32)
 [OK]   Oracle-Box-MobileSAM  NC4K      Sm=0.8503 (fp32)
-[OK]   FEDER                 CHAMELEON Sm=0.8867 (clean-only, released maps, 0 missing)  
-[OK]   FEDER                 CAMO      Sm=0.8021 (clean-only, released maps, 0 missing)  
-[TODO] FEDER COD10K: no clean-only result
-[OK]   FEDER                 NC4K      Sm=0.8470 (clean-only, released maps, 0 missing)  
-[TODO] SINet-V2: released maps not scored
+[OK]   FEDER                 CHAMELEON Sm=0.8867 (clean-only, released maps, 0 missing)
+[OK]   FEDER                 CAMO      Sm=0.8021 (clean-only, released maps, 0 missing)
+[INFO] FEDER                 COD10K    skipped - authors' released maps contain no COD10K folder and the weights link is dead (decision 2026-10-16: skip; FEDER is clean-only on CHAMELEON/CAMO/NC4K)
+[OK]   FEDER                 NC4K      Sm=0.8470 (clean-only, released maps, 0 missing)
+[INFO] SINet-V2: released maps not scored (optional: paper S-alpha already matched on all 4 datasets (|Δ| <= 0.0004)) - python scripts/eval_prediction_maps.py --model SINet-V2 --pred-root data/released_maps/SINet-V2
+[INFO] SAM-Adapter: ~17.1 s/image on clean data - too slow for the 40-condition corruption grid; profile it: python -m src.profile --models SAM-Adapter --runs 5
 
 ## 6. Reproduction
 [OK]   SINet-V2              CHAMELEON ours 0.8881 vs paper 0.888 (Δ +0.0001)
@@ -90,10 +91,4 @@
 [INFO] Oracle-Box-MobileSAM has no published value; inspect a few predictions at Checkpoint 2 (python -m src.evaluate --models Oracle-Box-MobileSAM --datasets CHAMELEON --save-pred 12 --out results/oracle_check.csv)
 
 ## Verdict
-NOT DONE - work remaining (see [TODO] lines)
-
-## Still to run
-    python scripts/eval_prediction_maps.py --model FEDER --pred-root data/released_maps/FEDER
-    python scripts/eval_prediction_maps.py --model SINet-V2 --pred-root data/released_maps/SINet-V2
-    python scripts/make_reproduction.py
-    python scripts/check_phase2.py
+PHASE 2 COMPLETE - ready for Checkpoint 2
