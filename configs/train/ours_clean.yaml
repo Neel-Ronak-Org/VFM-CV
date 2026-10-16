@@ -1,0 +1,2 @@
+# Ours-Clean: adapters + learned prompts, clean images only.
+base: base.yaml

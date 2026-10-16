@@ -1,0 +1,4 @@
+# Ablation: no encoder adapters (frozen encoder, only prompts + decoder learn)
+base: ours_full.yaml
+model:
+  adapter: none

@@ -2,7 +2,7 @@
 
 A corruption-robustness benchmark for camouflaged object detection (COD) that compares specialist COD models with SAM-based ones, plus a lightweight robust SAM adapter that runs on a 4 GB laptop GPU.
 
-> **Status: Phase 0 (setup and novelty check).** No results yet. Every number this project reports will come from `results/*.csv`.
+> **Status:** baselines reproduced (Phase 2). Corruption benchmark running (Phase 3). Our adapter's code and training script plus the demo are ready (Phases 4 and 6). Every number this project reports comes from `results/*.csv`.
 
 - Project brief: [`CLAUDE.md`](CLAUDE.md)
 - Plan and doability assessment: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)
@@ -48,6 +48,24 @@ python -m src.evaluate --models SINet-V2 --datasets CHAMELEON CAMO COD10K NC4K -
 python -m src.evaluate --models SINet-V2 --datasets COD10K --corruptions all
 ```
 Corruptions are generated on the fly with fixed per-image seeds (`configs/corruptions.yaml`), so results are bit-reproducible.
+
+## Train our adapter
+
+```bash
+python -m src.train --config configs/train/ours_full.yaml --profile 40   # speed + VRAM check, saves nothing
+python -m src.train --config configs/train/ours_full.yaml                # train (Ours-Clean / Ours-Aug: ours_clean.yaml / ours_aug.yaml)
+python -m src.train --config configs/train/ours_full.yaml --resume       # continue after --max-hours, Ctrl+C or a crash
+python -m src.evaluate --models Ours-Full --datasets CHAMELEON --corruptions clean
+```
+Needs `checkpoints/mobile_sam/mobile_sam.pt` (`python scripts/download_data.py --weights mobile_sam`). Checkpoints go to `checkpoints/ours/<run>/`, logs to `results/train/<run>/`. See `docs/EXPLAINER.md` §9 for the design and the VRAM ladder.
+
+## Demo
+
+```bash
+python demo/app.py                    # SINet-V2 vs our best trained adapter; opens in the browser
+python demo/app.py --device cpu       # without a GPU
+```
+Put your own photos in `demo/my_photos/`. Presentation shot list: `docs/DEMO_SCRIPT.md`.
 
 ## Repository layout
 

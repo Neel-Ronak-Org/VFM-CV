@@ -1,0 +1,4 @@
+# Ablation: LoRA (rank 8 on attention qkv) instead of bottleneck adapters
+base: ours_full.yaml
+model:
+  adapter: lora

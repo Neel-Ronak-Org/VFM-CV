@@ -13,6 +13,10 @@ REGISTRY = {
     "PFNet": "src.models.pfnet:PFNet",
     "FEDER": "src.models.feder:FEDER",
     "SAM-Adapter": "src.models.sam_adapter:SAMAdapter",
+    # Ours (src/train.py -> checkpoints/ours/<run>/final.pt):
+    "Ours-Clean": "src.models.robust_adapter:OursClean",
+    "Ours-Aug": "src.models.robust_adapter:OursAug",
+    "Ours-Full": "src.models.robust_adapter:OursFull",
     # Analysis only -- uses the ground-truth box, NOT a fair competitor:
     "Oracle-Box-MobileSAM": "src.models.oracle_box_sam:OracleBoxMobileSAM",
 }

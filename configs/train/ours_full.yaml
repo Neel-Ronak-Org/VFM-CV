@@ -1,0 +1,8 @@
+# Ours-Full: every sample gives a clean and a corrupted (seen corruption) view.
+# Supervised loss = mean over both views (so half the supervised views are corrupted, as in Ours-Aug)
+# + lambda * consistency between the two predicted maps (clean view treated as a fixed target).
+base: base.yaml
+consistency:
+  weight: 1.0
+  type: mse
+  stopgrad_clean: true
