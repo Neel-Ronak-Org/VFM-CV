@@ -107,3 +107,27 @@ def test_sam_adapter_detects_backbone_from_checkpoint(tmp_path):
     torch.save({"module." + k: v for k, v in src.net.state_dict().items()}, tmp_path / "sa.pth")
     m = SAMAdapter(weights=tmp_path / "sa.pth", device="cpu")
     assert m.variant == "ViT-B"
+
+
+def test_sam_adapter_chunked_attention_is_exact():
+    from src.models.sam_adapter import chunked_attention_forward
+    from src.models.third_party.sam_adapter.image_encoder import Attention
+    torch.manual_seed(0)
+    att = Attention(dim=64, num_heads=8, use_rel_pos=True, input_size=(12, 12)).eval()
+    torch.nn.init.normal_(att.rel_pos_h, std=0.5)
+    torch.nn.init.normal_(att.rel_pos_w, std=0.5)
+    x = torch.randn(2, 12, 12, 64)
+    with torch.no_grad():
+        ref = att(x)
+        for chunk in (1, 3, 8):
+            assert torch.allclose(chunked_attention_forward(att, x, chunk), ref, atol=1e-5)
+
+
+def test_sam_adapter_lowmem_matches_original():
+    from src.models.sam_adapter import SAMAdapter
+    torch.manual_seed(0)
+    plain = SAMAdapter(weights=None, embed_dim=768, device="cpu", lowmem=False)
+    low = SAMAdapter(weights=None, embed_dim=768, device="cpu", lowmem=True)
+    low.net.load_state_dict(plain.net.state_dict())
+    img = np.random.default_rng(1).integers(0, 256, (64, 80, 3), dtype=np.uint8)
+    assert np.allclose(plain.predict(img), low.predict(img), atol=1e-4)

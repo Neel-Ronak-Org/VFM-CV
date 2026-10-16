@@ -226,3 +226,47 @@ git checkout main ; git pull
 python scripts/check_phase2.py      # follow its "Still to run" list, then run it again
 git add results/ ; git commit -m "Phase 2 status" ; git push
 ```
+
+### Parked idea (2026-10-15)
+- Student's idea for a follow-up: biologically inspired modules (V1 front end, contour integration / border ownership, recurrent top-down refinement) on a frozen backbone, tested with this project's benchmark. Written up in `docs/FUTURE_WORK.md`. **Not part of the current plan**; revisit after Phase 9.
+---
+
+## Session 7 — 2026-10-16 (Claude, cloud container) — 🛑 CHECKPOINT 2
+
+### Reproduction table (from `results/phase2_status.md`, laptop run)
+Clean S-alpha, ours vs published (tolerance ±0.015):
+
+| Model | CHAMELEON | CAMO | COD10K | NC4K | Verdict |
+|---|---|---|---|---|---|
+| SINet-V2 | 0.8881 / 0.888 | 0.8204 / 0.820 | 0.8152 / 0.815 | 0.8470 / 0.847 | ✅ |Δ| ≤ 0.0004 |
+| PFNet | 0.8819 / 0.882 | 0.7825 / 0.782 | 0.7996 / 0.800 | 0.8287 / — | ✅ |Δ| ≤ 0.0005 |
+| ZoomNet | 0.9019 / 0.902 | 0.8201 / 0.820 | 0.8385 / 0.838 | 0.8531 / — | ✅ |Δ| ≤ 0.0005; vs authors' maps ≤ 0.0003 |
+| SAM2-UNet | 0.9139 / 0.914 | 0.8835 / 0.884 | 0.8799 / 0.880 | 0.9007 / 0.901 | ✅ |Δ| ≤ 0.0005 |
+| SAM-Adapter (ViT-H) | 0.8959 / 0.896 | 0.8470 / 0.847 | 0.8844 / 0.883 | 0.8842 / — | ✅ |Δ| ≤ 0.0014 |
+| FEDER (released maps, clean-only) | 0.8867 | 0.8021 | — | 0.8470 | no weights; no COD10K maps |
+| Oracle-Box MobileSAM (analysis) | 0.7869 | 0.8270 | 0.8273 | 0.8503 | needs visual check |
+
+- Data, weights and the released SAM-Adapter config all check out (config identical to our wrapper).
+- **Decision (student):** FEDER COD10K skipped → FEDER is clean-only on CHAMELEON/CAMO/NC4K and is not in the corruption benchmark. Recorded as a known gap in `check_phase2.py`.
+
+### Problem found: SAM-Adapter is ~16–18 s/image on the laptop (others ~0.06–0.23 s)
+- At that speed its 40-condition grid would take ~355 h on COD10K alone.
+- Likely cause (mine): fp32 ViT-H weights (2.5 GB) + autocast fp16 copies + explicit 4096×4096×16 attention maps exceed 4 GB → Windows pages GPU memory to system RAM.
+- Fix: SAM-Adapter **low-memory mode** (default on CUDA): fp16 encoder weights, attention computed 4 heads at a time (exact; unit-tested), FFT branch kept fp32. CPU test: fp16-encoder output within 3e-4 of fp32.
+- Needs on the laptop: profile speed/VRAM, then re-check clean CHAMELEON S-alpha (should stay ≈ 0.896).
+
+### Also done
+- `src/profile.py` (Phase 5 tool, needed now): params, GFLOPs/GMACs (torch FlopCounterMode), end-to-end latency/FPS, peak VRAM, oversubscription flag → `results/efficiency.csv`.
+- `scripts/qualitative_grid.py`: image | GT (+ oracle box) | model maps, worst-N + random rows → `figures/qual_*.jpg` (oracle check now; Fig. 5 later).
+- `check_phase2.py`: known gaps (FEDER COD10K) and SINet-V2 map scoring are informational; warns about models too slow for Phase 3.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python -m src.profile --models SAM-Adapter --runs 5
+python -m src.evaluate --models SAM-Adapter --datasets CHAMELEON --corruptions clean --out results/samadapter_lowmem_check.csv
+python scripts/qualitative_grid.py --models Oracle-Box-MobileSAM SINet-V2 SAM2-UNet --dataset CHAMELEON
+python -m src.profile --models SINet-V2 PFNet ZoomNet SAM2-UNet Oracle-Box-MobileSAM
+python scripts/check_phase2.py
+git add results/ figures/ ; git commit -m "Checkpoint 2 checks" ; git push
+```
