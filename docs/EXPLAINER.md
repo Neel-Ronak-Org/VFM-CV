@@ -120,4 +120,25 @@ Old baselines were written for PyTorch 1.x. We copy their network code unchanged
 1. How much of COD's difficulty is *finding* the object rather than *segmenting* it? The gap between the oracle and the real models measures this.
 2. Does corruption hurt SAM's *segmentation* even when the location is given? If the oracle stays robust while SAM-based COD models drop, the weakness lies in localisation.
 
+**What the oracle showed (Checkpoint 2, `figures/qual_CHAMELEON_clean.jpg`).** The oracle segments compact, clearly bounded animals well (Sα 0.89–0.95). It fails in two specific situations:
+- **The box covers most of the image.** SAM can't tell what the box refers to and fills the whole box, sometimes even *inverting* the mask (on one spider it marked the background as the object).
+- **The object is thin or broken up** (legs, stick insects). SAM fills the box instead of outlining the object.
+
+So *knowing where the object is* does not solve camouflage for a zero-shot SAM. Outlining thin parts and frame-filling objects stays hard, and that is exactly where the trained COD models do better. This is a useful finding for the paper, and it shows the oracle is a probe, not an upper bound in every case.
+
+## 8. Running the corruption benchmark (Phase 3)
+
+**What runs:** every model on 8 corruptions × 5 severities, plus clean images, on each test set. The plan is in `configs/benchmark.yaml`: the five fast models on all four datasets, SAM-Adapter on COD10K, CAMO and CHAMELEON. SAM-Adapter on NC4K is optional because it would add about 6 days of laptop time for little gain. COD10K comes first because it's the paper's main table, as in COD10K-C.
+
+**Why per-image scores are saved:** every metric we report is an average over images. We checked that the mean of per-image scores equals the toolbox's dataset score exactly. Saving each image's scores therefore (1) lets a crash resume mid-condition and lose at most one image, and (2) gives us the data for confidence intervals and paired significance tests later. "Is model A's robustness really better than model B's, or is it noise?" is the first question a reviewer will ask.
+
+**Why it's faster than a simple loop:** the GPU prediction is often the *smallest* part of the per-image cost. Loading, corrupting and especially computing the six metrics (weighted F-measure alone is ~80 ms on a large image) take longer. So these run in background threads while the GPU predicts the next image. A test checks the results are identical to the simple sequential loop.
+
+**Summary numbers** come from `scripts/summarize_benchmark.py`:
+- **mCorr:** mean score over the group of corruptions;
+- **retention:** mCorr ÷ clean score;
+- **mCE:** corruption error relative to SINet-V2, the ImageNet-C convention.
+
+Each is reported for all corruptions, seen and unseen ones, each family, and each single corruption.
+
 *(Sections on our adapter, the consistency loss and efficiency metrics are added in Phases 4–5.)*

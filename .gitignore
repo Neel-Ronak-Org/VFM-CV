@@ -16,6 +16,8 @@ checkpoints/*
 *.zip
 
 # Generated outputs (results/*.csv ARE committed)
+# per-image scores: unfinished conditions (.csv) stay local; finished ones (.csv.gz) are committed
+results/per_image/**/*.csv
 results/predictions/
 results/logs/*.out
 demo/my_photos/*
