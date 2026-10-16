@@ -57,3 +57,19 @@ def test_missing_results_produce_commands(tmp_path, monkeypatch):
     cp.check_results(r, have={"PFNet": True, "FEDER": False})
     assert r.incomplete
     assert "python scripts/run_clean_baselines.py --models PFNet" in r.todo
+
+
+def test_known_gap_and_slow_model_are_info_not_todo(tmp_path, monkeypatch):
+    monkeypatch.setattr(cp, "REPO", tmp_path)
+    (tmp_path / "results").mkdir()
+    rows = [{"model": m, "dataset": d, "corruption": "clean", "severity": 0, "Sm": 0.8, "precision": "fp16",
+             "mean_latency_ms": 16000 if m == "SAM-Adapter" else 90} for m in cp.EVALUATED for d in cp.DATASETS]
+    pd.DataFrame(rows).to_csv(tmp_path / "results" / "benchmark.csv", index=False)
+    maps = [{"model": "FEDER", "dataset": d, "Sm": 0.8, "n_missing": 0} for d in ("CHAMELEON", "CAMO", "NC4K")]
+    maps += [{"model": "ZoomNet", "dataset": d, "Sm": 0.8, "n_missing": 0} for d in cp.DATASETS]
+    pd.DataFrame(maps).to_csv(tmp_path / "results" / "released_maps.csv", index=False)
+    r = cp.Report()
+    cp.check_results(r, have={m: True for m in cp.EVALUATED} | {"FEDER": False})
+    assert not r.incomplete and not r.failed                     # FEDER COD10K gap + SINet-V2 maps are optional
+    text = "\n".join(r.lines)
+    assert "FEDER" in text and "skipped" in text and "too slow" in text and "SAM-Adapter" in text

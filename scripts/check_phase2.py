@@ -35,6 +35,14 @@ WEIGHTS = {"SINet-V2": "sinet_v2", "PFNet": "pfnet", "ZoomNet": "zoomnet", "FEDE
 MAPS = {"SINet-V2": "data/released_maps/SINet-V2", "ZoomNet": "data/released_maps/ZoomNet",
         "FEDER": "data/released_maps/FEDER"}
 MAPS_DELTA_WARN = 0.005  # ours vs authors' maps; bigger gaps deserve a look
+# Accepted gaps (decided with the student) -> reported as INFO, never block completion.
+KNOWN_GAPS = {
+    ("FEDER", "COD10K"): "authors' released maps contain no COD10K folder and the weights link is dead "
+                         "(decision 2026-10-16: skip; FEDER is clean-only on CHAMELEON/CAMO/NC4K)",
+}
+# Released-maps scoring is required only where the paper value could not be confirmed for every dataset.
+MAPS_SCORING_OPTIONAL = {"SINet-V2": "paper S-alpha already matched on all 4 datasets (|Δ| <= 0.0004)"}
+SLOW_MS = 2000  # clean mean latency above this makes the 40-condition corruption grid impractical
 
 
 def _load_script(name: str):
@@ -181,6 +189,9 @@ def check_maps(r: Report, epm) -> None:
             r.need(f"{model}: {rel} not found", cmd)
             continue
         for d in DATASETS:
+            if (model, d) in KNOWN_GAPS:
+                r.info(f"{model} maps {d}: skipped - {KNOWN_GAPS[(model, d)]}")
+                continue
             folder = epm.find_dataset_dir(root, d)
             try:
                 n_gt = len(CODDataset.from_config(d, cfg))
@@ -200,6 +211,9 @@ def check_results(r: Report, have: dict[str, bool]) -> None:
     clean = bench[(bench.corruption == "clean") & (bench.severity == 0)] if bench is not None else pd.DataFrame()
     for m in EVALUATED + ["FEDER"]:
         for d in DATASETS:
+            if (m, d) in KNOWN_GAPS:
+                r.info(f"{m:21s} {d:9s} skipped - {KNOWN_GAPS[(m, d)]}")
+                continue
             in_bench = len(clean) and ((clean.model == m) & (clean.dataset == d)).any()
             if in_bench:
                 row = clean[(clean.model == m) & (clean.dataset == d)].iloc[-1]
@@ -218,8 +232,17 @@ def check_results(r: Report, have: dict[str, bool]) -> None:
                    f"python scripts/run_clean_baselines.py --models {m}" if have.get(m, True) else None)
     for m in ("SINet-V2", "ZoomNet"):
         if maps is None or not (maps.model == m).any():
-            r.need(f"{m}: released maps not scored",
-                   f"python scripts/eval_prediction_maps.py --model {m} --pred-root data/released_maps/{m}")
+            cmd = f"python scripts/eval_prediction_maps.py --model {m} --pred-root data/released_maps/{m}"
+            if m in MAPS_SCORING_OPTIONAL:
+                r.info(f"{m}: released maps not scored (optional: {MAPS_SCORING_OPTIONAL[m]}) - {cmd}")
+            else:
+                r.need(f"{m}: released maps not scored", cmd)
+    if len(clean) and "mean_latency_ms" in clean:
+        lat = clean.groupby("model").mean_latency_ms.median()
+        for m, ms in lat.items():
+            if ms > SLOW_MS:
+                r.info(f"{m}: ~{ms / 1000:.1f} s/image on clean data - too slow for the 40-condition corruption grid; "
+                       f"profile it: python -m src.profile --models {m} --runs 5")
 
 
 def check_reproduction(r: Report, mr) -> None:

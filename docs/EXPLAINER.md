@@ -110,6 +110,10 @@ Old baselines were written for PyTorch 1.x. We copy their network code unchanged
 
 **Two ways a model can post-process its output, and why it matters for robustness.** SINet-V2, FEDER and SAM2-UNet min-max normalise every map (§5). ZoomNet, PFNet and SAM-Adapter output the raw sigmoid. We keep each model's *official* choice so the clean numbers reproduce, and we report which one each uses. Min-max can hide a model's uncertainty under heavy corruption, so the paper should mention it whenever a min-max model looks surprisingly robust.
 
+**FEDER is "clean-only".** Its trained weights are no longer downloadable, so we can't run it on corrupted images. We score the authors' released prediction maps instead, and those exist only for CHAMELEON, CAMO and NC4K (no COD10K). FEDER therefore appears only in the clean-results table. The brief allows this fallback; the paper should say so in one sentence.
+
+**SAM-Adapter on a 4 GB GPU.** ViT-H has 632M parameters. Run naively, its fp32 weights plus the attention maps of its four global-attention layers (4096×4096 per head, 16 heads) need more than 4 GB, and Windows silently spills into system RAM (~16 s per image). Our wrapper keeps the encoder weights in fp16 and computes attention a few heads at a time. The maths is identical, and a unit test checks it. That trick is called *attention chunking*, and it's a standard way to trade a little speed for a lot of memory.
+
 **Training-data note:** most baselines train on COD10K-train + CAMO-train (4,040 images). FEDER's README says COD10K-train only (3,040 images). The paper's baseline table should say so.
 
 **The oracle (zero-shot MobileSAM with the ground-truth box).** We give SAM a box drawn around the true object, so it only has to *outline* the object, not *find* it. No real detector has that box, which is why it is labelled "oracle, not a fair competitor". It answers two useful questions:
