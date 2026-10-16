@@ -1,0 +1,11 @@
+model,dataset,source,Sm,Em,wFm,MAE,Dice,IoU,n_images,n_missing,pred_root,git,timestamp
+FEDER,CHAMELEON,released_maps,0.886709,0.946449,0.834487,0.029553,0.855881,0.782132,76,0,data\released_maps\FEDER\feder_maps\CHAMELEON,903f2e9-dirty,2026-10-16 10:20:12
+FEDER,CAMO,released_maps,0.8021,0.866601,0.73773,0.071223,0.767409,0.665433,250,0,data\released_maps\FEDER\feder_maps\CAMO,903f2e9-dirty,2026-10-16 10:20:46
+FEDER,NC4K,released_maps,0.847044,0.90695,0.788638,0.044251,0.809139,0.719065,4121,0,data\released_maps\FEDER\feder_maps\NC4K,903f2e9-dirty,2026-10-16 10:26:38
+ZoomNet,CHAMELEON,released_maps,0.901743,0.942697,0.845057,0.022942,0.86682,0.800198,76,0,data\released_maps\ZoomNet\CVPR-2022-ZoomNet-COD\chameleon,903f2e9-dirty,2026-10-16 10:27:00
+ZoomNet,NC4K,released_maps,0.852816,0.895713,0.784401,0.043368,0.808181,0.725983,4121,0,data\released_maps\ZoomNet\CVPR-2022-ZoomNet-COD\nc4k,903f2e9-dirty,2026-10-16 10:33:21
+FEDER,CHAMELEON,released_maps,0.886709,0.946449,0.834487,0.029553,0.855881,0.782132,76,0,data\released_maps\FEDER\feder_maps\CHAMELEON,903f2e9-dirty,2026-10-16 10:41:00
+FEDER,CAMO,released_maps,0.8021,0.866601,0.73773,0.071223,0.767409,0.665433,250,0,data\released_maps\FEDER\feder_maps\CAMO,903f2e9-dirty,2026-10-16 10:41:32
+FEDER,NC4K,released_maps,0.847044,0.90695,0.788638,0.044251,0.809139,0.719065,4121,0,data\released_maps\FEDER\feder_maps\NC4K,903f2e9-dirty,2026-10-16 10:46:52
+FEDER,CHAMELEON,released_maps,0.886709,0.946449,0.834487,0.029553,0.855881,0.782132,76,0,data\released_maps\FEDER\feder_maps\CHAMELEON,903f2e9-dirty,2026-10-16 17:19:41
+FEDER,CAMO,released_maps,0.8021,0.866601,0.73773,0.071223,0.767409,0.665433,250,0,data\released_maps\FEDER\feder_maps\CAMO,903f2e9-dirty,2026-10-16 17:20:39

@@ -1,17 +1,25 @@
-model,dataset,Sm_ours,Em_ours,wFm_ours,MAE_ours,n_images,precision,Sm_reported,delta_Sm_vs_reported,within_tolerance,reported_source
-SINet-V2,CHAMELEON,0.888064,0.941431,0.815847,0.029758,76,fp32,0.888,0.0001,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
-SINet-V2,CAMO,0.820405,0.882126,0.74269,0.070305,250,fp32,0.82,0.0004,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
-SINet-V2,COD10K,0.815154,0.887131,0.679718,0.036775,2026,fp32,0.815,0.0002,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
-SINet-V2,NC4K,0.846976,0.902319,0.769382,0.047723,4121,fp32,0.847,-0.0,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/
-ZoomNet,CHAMELEON,0.901913,0.942731,0.843826,0.02311,76,fp32,0.902,-0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
-ZoomNet,CAMO,0.820079,0.877182,0.751493,0.066099,250,fp32,0.82,0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
-ZoomNet,COD10K,0.838516,0.887702,0.727151,0.029154,2026,fp32,0.838,0.0005,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
-ZoomNet,NC4K,0.853071,0.896269,0.783587,0.043505,4121,fp32,,,,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html
-SAM2-UNet,CHAMELEON,0.913883,0.961829,0.86471,0.021782,76,fp16,0.914,-0.0001,True,https://arxiv.org/html/2408.08870
-SAM2-UNet,CAMO,0.883527,0.931743,0.845347,0.04216,250,fp16,0.884,-0.0005,True,https://arxiv.org/html/2408.08870
-SAM2-UNet,COD10K,0.879885,0.937369,0.801436,0.020764,2026,fp16,0.88,-0.0001,True,https://arxiv.org/html/2408.08870
-SAM2-UNet,NC4K,0.900652,0.941087,0.857797,0.029259,4121,fp16,0.901,-0.0003,True,https://arxiv.org/html/2408.08870
-Oracle-Box-MobileSAM,CHAMELEON,0.786893,0.816114,0.669681,0.108649,76,fp32,,,,
-Oracle-Box-MobileSAM,CAMO,0.826958,0.845777,0.74572,0.095489,250,fp32,,,,
-Oracle-Box-MobileSAM,COD10K,0.827252,0.864176,0.71282,0.065481,2026,fp32,,,,
-Oracle-Box-MobileSAM,NC4K,0.850308,0.879576,0.769602,0.072235,4121,fp32,,,,
+model,dataset,Sm_ours,Em_ours,wFm_ours,MAE_ours,n_images,precision,Sm_reported,delta_Sm_vs_reported,within_tolerance,reported_source,Sm_released_maps,delta_Sm_vs_released_maps,released_maps_missing
+SINet-V2,CHAMELEON,0.888064,0.941431,0.815847,0.029758,76,fp32,0.888,0.0001,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/,,,
+SINet-V2,CAMO,0.820405,0.882126,0.74269,0.070305,250,fp32,0.82,0.0004,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/,,,
+SINet-V2,COD10K,0.815154,0.887131,0.679718,0.036775,2026,fp32,0.815,0.0002,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/,,,
+SINet-V2,NC4K,0.846976,0.902319,0.769382,0.047723,4121,fp32,0.847,-0.0,True,https://arxiv.org/pdf/2110.15606; https://pmc.ncbi.nlm.nih.gov/articles/PMC12470956/,,,
+ZoomNet,CHAMELEON,0.901913,0.942731,0.843826,0.02311,76,fp32,0.902,-0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html,0.901743,0.0002,0.0
+ZoomNet,CAMO,0.820079,0.877182,0.751493,0.066099,250,fp32,0.82,0.0001,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html,,,
+ZoomNet,COD10K,0.838516,0.887702,0.727151,0.029154,2026,fp32,0.838,0.0005,True,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html,,,
+ZoomNet,NC4K,0.853071,0.896269,0.783587,0.043505,4121,fp32,,,,https://arxiv.org/html/2408.14562v1; https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html,0.852816,0.0003,0.0
+SAM2-UNet,CHAMELEON,0.913883,0.961829,0.86471,0.021782,76,fp16,0.914,-0.0001,True,https://arxiv.org/html/2408.08870,,,
+SAM2-UNet,CAMO,0.883527,0.931743,0.845347,0.04216,250,fp16,0.884,-0.0005,True,https://arxiv.org/html/2408.08870,,,
+SAM2-UNet,COD10K,0.879885,0.937369,0.801436,0.020764,2026,fp16,0.88,-0.0001,True,https://arxiv.org/html/2408.08870,,,
+SAM2-UNet,NC4K,0.900652,0.941087,0.857797,0.029259,4121,fp16,0.901,-0.0003,True,https://arxiv.org/html/2408.08870,,,
+Oracle-Box-MobileSAM,CHAMELEON,0.786893,0.816114,0.669681,0.108649,76,fp32,,,,,,,
+Oracle-Box-MobileSAM,CAMO,0.826958,0.845777,0.74572,0.095489,250,fp32,,,,,,,
+Oracle-Box-MobileSAM,COD10K,0.827252,0.864176,0.71282,0.065481,2026,fp32,,,,,,,
+Oracle-Box-MobileSAM,NC4K,0.850308,0.879576,0.769602,0.072235,4121,fp32,,,,,,,
+PFNet,CHAMELEON,0.881913,0.930873,0.809594,0.032586,76,fp32,0.882,-0.0001,True,https://pmc.ncbi.nlm.nih.gov/articles/PMC10346819/,,,
+PFNet,CAMO,0.78249,0.84161,0.695649,0.084928,250,fp32,0.782,0.0005,True,https://pmc.ncbi.nlm.nih.gov/articles/PMC10346819/,,,
+PFNet,COD10K,0.799624,0.877615,0.659802,0.039606,2026,fp32,0.8,-0.0004,True,https://pmc.ncbi.nlm.nih.gov/articles/PMC10346819/,,,
+PFNet,NC4K,0.828742,0.887101,0.745182,0.052816,4121,fp32,,,,https://pmc.ncbi.nlm.nih.gov/articles/PMC10346819/,,,
+SAM-Adapter,CHAMELEON,0.895947,0.919367,0.830395,0.032286,76,fp16,0.896,-0.0001,True,https://arxiv.org/pdf/2408.04579,,,
+SAM-Adapter,CAMO,0.847025,0.873942,0.774327,0.069702,250,fp16,0.847,0.0,True,https://arxiv.org/pdf/2408.04579,,,
+SAM-Adapter,COD10K,0.884428,0.919353,0.807268,0.024969,2026,fp16,0.883,0.0014,True,https://arxiv.org/pdf/2408.04579,,,
+SAM-Adapter,NC4K,0.884188,0.90499,0.818024,0.041418,4121,fp16,,,,https://arxiv.org/pdf/2408.04579,,,
