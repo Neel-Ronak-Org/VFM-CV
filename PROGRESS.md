@@ -306,3 +306,62 @@ git add results/ ; git commit -m "benchmark progress" ; git push   # after each 
 
 ### Next (Claude), while the benchmark runs
 - Phase 4: our robust adapter (MobileSAM TinyViT + adapters + learned prompt, training script, corruption augmentation, consistency loss), so training can start as soon as the GPU is free.
+
+---
+
+## Session 9 — 2026-10-16 (Claude, cloud container) — Phase 4 adapter + training script, Phase 6 demo
+
+### Plan change (student)
+Demo presentation on **Wednesday 21 Oct**. Order: finish the current `--max-hours 10` benchmark run(s), then **train our model**, run the **demo**, and resume benchmarking after Wednesday. Paper drafting after that.
+
+### Done
+- **`src/models/robust_adapter.py`**:
+  - frozen MobileSAM TinyViT encoder plus zero-initialised bottleneck adapters in the 10 transformer blocks (LoRA / none as ablations);
+  - learned prompt tokens, box-initialised, plus a learned dense prompt; SAM mask decoder (trainable);
+  - 3.71 M trainable of 10.33 M total.
+- **Checks against the real `mobile_sam.pt`, done in the container:**
+  - the encoder at init equals MobileSAM's image encoder exactly (max diff 0.0);
+  - our batched decoder equals SAM's decoder per image (≤ 9e-6);
+  - box-initialised tokens equal SAM's box prompt embedding.
+- Registered `Ours-Clean`, `Ours-Aug` and `Ours-Full` (checkpoints at `checkpoints/ours/<run>/final.pt`). An unfinished checkpoint is reported as `Ours-Full@ep<x>-unfinished`.
+- **`src/losses.py`:** structure loss (window scaled with resolution, separable box filter); consistency loss (MSE / symmetric KL, optional stop-gradient).
+- **`CODTrainSet` in `src/datasets.py`:**
+  - corrupts at the original resolution, then applies the same crop/flip to all views and resizes;
+  - seeded by (seed, epoch, index); no photometric augmentation.
+- **`src/train.py`:**
+  - YAML configs with `base:` inheritance and `--set key=value` overrides;
+  - AMP, gradient checkpointing (non-reentrant), gradient accumulation, AdamW with warm-up and cosine schedule, clipping;
+  - `--profile N` (speed/VRAM → `results/train/profile.csv`);
+  - `time_budget_hours` (cuts epochs to fit after measuring speed);
+  - `--max-hours`, mid-epoch resumable `last.pt` (every 15 min, each epoch, and on Ctrl+C), `final.pt`;
+  - `results/train/<run>/{config.yaml, log.csv, summary.json}`;
+  - refuses unseen corruptions; refuses to resume with a changed config.
+- **Configs:** `configs/train/{base, ours_clean, ours_aug, ours_full}` plus ablations (λ 0.1 / 0.5, sym_kl, no stop-grad, LoRA, no adapter).
+- **`demo/app.py` (Gradio 6.29.1):**
+  - Detector tab: 12 seeded test images (or `demo/examples.txt`) plus `demo/my_photos`, upload, corruption dropdown marking seen/unseen, severity 0–5, side-by-side overlays with latency, GT toggle with per-image Sα/MAE, CPU fallback;
+  - Benchmark tab reads `results/*.csv`;
+  - smoke-tested headless with screenshots.
+- `docs/EXPLAINER.md` §9–10, `docs/DEMO_SCRIPT.md`, README Train/Demo sections, gradio pinned.
+- 94 tests pass.
+
+### Not done / open
+- No GPU timing yet: epoch time and VRAM must come from `--profile` on the laptop. My rough guess is 15–40 min per epoch for Ours-Full at 1024 px; unverified.
+- FPN-head ablation and the EfficientSAM fallback are not implemented (only if needed).
+- If a variant is retrained, delete its old rows from `results/benchmark.csv` (resume skips existing rows).
+
+### Next (student), in order
+```powershell
+git checkout main ; git pull ; uv pip install -r requirements.txt   # adds gradio
+# 1. pause the benchmark (let the current --max-hours run end, or Ctrl+C; it resumes later)
+# 2. speed/VRAM check (~2 min); look at peak_vram_mb and epoch_minutes
+python -m src.train --config configs/train/ours_full.yaml --profile 40
+#    if peak_vram_mb > ~3600 or it is very slow: add  --set train.batch_size=1 train.grad_accum=8  (and re-profile)
+# 3. train Ours-Full within a budget (the schedule is fitted to it); resumable
+python -m src.train --config configs/train/ours_full.yaml --set train.time_budget_hours=10
+python -m src.train --config configs/train/ours_full.yaml --resume      # if it was interrupted
+# 4. quick check + demo
+python -m src.evaluate --models Ours-Full --datasets CHAMELEON --corruptions clean
+python demo/app.py
+# 5. if time before Wednesday: Ours-Clean (same commands with ours_clean.yaml) for the "with vs without robustness training" comparison
+git add results/ ; git commit -m "Ours-Full training" ; git push
+```
