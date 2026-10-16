@@ -270,3 +270,39 @@ python -m src.profile --models SINet-V2 PFNet ZoomNet SAM2-UNet Oracle-Box-Mobil
 python scripts/check_phase2.py
 git add results/ figures/ ; git commit -m "Checkpoint 2 checks" ; git push
 ```
+
+---
+
+## Session 8 — 2026-10-16 (Claude, cloud container) — Checkpoint 2 closed, Phase 3 tooling
+
+### From the student (laptop)
+- `check_phase2.py`: **PHASE 2 COMPLETE**.
+- SAM-Adapter low-memory mode: **3.84 s/img** (was 16–18 s), peak 2.48 GB / reserved 2.89 GB of 4 GB (no oversubscription); clean CHAMELEON Sα **0.8960** (was 0.8959): unchanged. (Its clean rows in benchmark.csv were made before low-memory mode; the check shows identical scores, so they are kept.)
+- `results/efficiency.csv` (fixed 1024×768 input, end-to-end): SINet-V2 29 ms, PFNet 38 ms, ZoomNet 94 ms, SAM2-UNet 71 ms, Oracle MobileSAM 78 ms, SAM-Adapter 3841 ms.
+- **Oracle check (`figures/qual_CHAMELEON_clean.jpg`): not a bug.** It fails when the box covers most of the image (fills the box or *inverts* the mask) or when the object is thin or fragmented; it is good on compact objects. Written up in EXPLAINER §7.
+
+### Decision: Phase 3 plan (student delegated: "best for the paper")
+- 5 fast models: full grid (8 corruptions × 5 severities + clean) on COD10K, CAMO, CHAMELEON, NC4K.
+- SAM-Adapter: full grid on COD10K, CAMO, CHAMELEON; NC4K clean-only (corrupted NC4K is optional, ~140 h extra).
+- Order: COD10K first (main table). Plan in `configs/benchmark.yaml`.
+
+### Done
+- **Per-image scores** (`results/per_image/<run>/<model>/<dataset>/<corruption>-<sev>.csv[.gz]`): written as computed (full precision), resume mid-condition, gzipped when the condition is complete (committed; for CIs and significance tests). Verified: dataset metrics = mean of per-image scores (exact).
+- **Parallel pipeline** in `src/evaluate.py` (`--workers`, default 2): 1 loader thread (load + corrupt; single thread because ImageNet-C uses a global RNG) + metric threads overlap with GPU inference; results identical to sequential (tested). Measured CPU costs per large image: metrics ~155 ms (wFm 82), corrupt ≤ 57 ms, load ~19 ms. On interruption, already-predicted images are still saved.
+- `--max-hours` in `src/evaluate.py`; `scripts/run_benchmark.py` (plan runner, `--status` with ETA from the latest code version's timings, `--max-hours`, `--stage`, `--include-optional`).
+- `scripts/summarize_benchmark.py` → `results/summary_robustness.csv`: clean, mCorr, retention (Sm/Em/wFm/Dice/IoU), MAE ratio, mCE (vs SINet-V2) for all / seen / unseen / families / single corruptions; flags incomplete groups.
+- 74 tests pass.
+
+### ETA
+`run_benchmark.py --status`: ~200 h at the old sequential speed (SAM-Adapter ~72 h of it); the parallel pipeline should cut the fast-model part substantially. Check real speed after the first COD10K conditions.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python scripts/run_benchmark.py --status
+python scripts/run_benchmark.py --max-hours 10       # repeat as often as convenient; resumes automatically
+git add results/ ; git commit -m "benchmark progress" ; git push   # after each session
+```
+
+### Next (Claude), while the benchmark runs
+- Phase 4: our robust adapter (MobileSAM TinyViT + adapters + learned prompt, training script, corruption augmentation, consistency loss), so training can start as soon as the GPU is free.

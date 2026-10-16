@@ -68,3 +68,17 @@ def test_rejects_bad_input():
         m.step(np.full((8, 8), 2.0), np.zeros((8, 8), bool))
     with pytest.raises(ValueError):
         m.step(np.zeros((8, 9)), np.zeros((8, 8), bool))
+
+
+def test_aggregate_of_image_scores_equals_accumulated():
+    from src.metrics import aggregate, image_scores
+    rng = np.random.default_rng(0)
+    acc, rows = CODMetrics(), []
+    for _ in range(6):
+        gt = _square(box=tuple(sorted(rng.integers(5, 60, 2))) + tuple(sorted(rng.integers(5, 60, 2)))) > 0
+        pred = np.clip(rng.normal(0.3, 0.3, gt.shape) + gt * 0.4, 0, 1).astype(np.float32)
+        acc.step(pred, gt)
+        rows.append(image_scores(pred, gt))
+    a, b = acc.results(), aggregate(rows)
+    for k in a:
+        assert a[k] == pytest.approx(b[k], abs=1e-12), k

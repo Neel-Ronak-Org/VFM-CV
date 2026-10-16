@@ -1,0 +1,18 @@
+# Phase 3 corruption benchmark plan (decided 2026-10-16, see PROGRESS.md Session 8).
+# Run with: python scripts/run_benchmark.py            (resumable; --status shows what's left + ETA)
+# Stages run in order; inside a stage, datasets in the listed order (COD10K first = the paper's main table).
+corruptions: all          # the 8 COD10K-C corruptions x 5 severities (+ clean)
+save_pred: {COD10K: 8}    # keep predictions for the first N images per condition (qualitative figures)
+
+stages:
+  - name: fast models, all datasets
+    models: [SINet-V2, PFNet, ZoomNet, SAM2-UNet, Oracle-Box-MobileSAM]
+    datasets: [COD10K, CAMO, CHAMELEON, NC4K]
+  - name: SAM-Adapter (ViT-H, ~3-4 s/img), main datasets
+    models: [SAM-Adapter]
+    datasets: [COD10K, CAMO, CHAMELEON]
+
+optional:   # only with --include-optional (~140 h extra on the RTX 3050)
+  - name: SAM-Adapter NC4K
+    models: [SAM-Adapter]
+    datasets: [NC4K]

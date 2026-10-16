@@ -34,6 +34,22 @@ def _gt_uint8(gt: np.ndarray) -> np.ndarray:
     return ((gt > 127) if gt.dtype == np.uint8 and gt.max() > 1 else (gt > 0.5)).astype(np.uint8) * 255
 
 
+def image_scores(pred: np.ndarray, gt: np.ndarray, threshold: float = 0.5) -> dict[str, float]:
+    """All six metrics for ONE image. Every dataset-level metric we report is the mean of these
+    per-image values (verified against PySODMetrics' accumulated results), which lets the harness
+    log per-image scores, resume mid-condition, and compute confidence intervals later."""
+    m = CODMetrics(threshold)
+    m.step(pred, gt)
+    return m.results()
+
+
+def aggregate(rows: list[dict]) -> dict[str, float]:
+    """Dataset-level metrics = mean of per-image scores."""
+    if not rows:
+        raise RuntimeError("no images")
+    return {k: float(np.mean([float(r[k]) for r in rows])) for k in METRIC_NAMES}
+
+
 class CODMetrics:
     """Accumulate per-image metrics; call `results()` for dataset-level averages."""
 
