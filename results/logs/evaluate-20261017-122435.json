@@ -1,0 +1,194 @@
+{
+  "git": "8b4bbea-dirty",
+  "host": "LAPTOP-9RT095IQ",
+  "python": "3.11.17",
+  "args": {
+    "models": [
+      "SAM2-UNet"
+    ],
+    "datasets": [
+      "CHAMELEON"
+    ],
+    "corruptions": [
+      "clean",
+      "all"
+    ],
+    "severities": null,
+    "out": "results/benchmark.csv",
+    "data_root": null,
+    "device": null,
+    "precision": "auto",
+    "limit": null,
+    "save_pred": 0,
+    "workers": 2,
+    "max_hours": 6.0346
+  },
+  "conditions": [
+    [
+      "clean",
+      0
+    ],
+    [
+      "gaussian_noise",
+      1
+    ],
+    [
+      "gaussian_noise",
+      2
+    ],
+    [
+      "gaussian_noise",
+      3
+    ],
+    [
+      "gaussian_noise",
+      4
+    ],
+    [
+      "gaussian_noise",
+      5
+    ],
+    [
+      "motion_blur",
+      1
+    ],
+    [
+      "motion_blur",
+      2
+    ],
+    [
+      "motion_blur",
+      3
+    ],
+    [
+      "motion_blur",
+      4
+    ],
+    [
+      "motion_blur",
+      5
+    ],
+    [
+      "gaussian_blur",
+      1
+    ],
+    [
+      "gaussian_blur",
+      2
+    ],
+    [
+      "gaussian_blur",
+      3
+    ],
+    [
+      "gaussian_blur",
+      4
+    ],
+    [
+      "gaussian_blur",
+      5
+    ],
+    [
+      "brightness",
+      1
+    ],
+    [
+      "brightness",
+      2
+    ],
+    [
+      "brightness",
+      3
+    ],
+    [
+      "brightness",
+      4
+    ],
+    [
+      "brightness",
+      5
+    ],
+    [
+      "contrast",
+      1
+    ],
+    [
+      "contrast",
+      2
+    ],
+    [
+      "contrast",
+      3
+    ],
+    [
+      "contrast",
+      4
+    ],
+    [
+      "contrast",
+      5
+    ],
+    [
+      "fog",
+      1
+    ],
+    [
+      "fog",
+      2
+    ],
+    [
+      "fog",
+      3
+    ],
+    [
+      "fog",
+      4
+    ],
+    [
+      "fog",
+      5
+    ],
+    [
+      "jpeg_compression",
+      1
+    ],
+    [
+      "jpeg_compression",
+      2
+    ],
+    [
+      "jpeg_compression",
+      3
+    ],
+    [
+      "jpeg_compression",
+      4
+    ],
+    [
+      "jpeg_compression",
+      5
+    ],
+    [
+      "rain",
+      1
+    ],
+    [
+      "rain",
+      2
+    ],
+    [
+      "rain",
+      3
+    ],
+    [
+      "rain",
+      4
+    ],
+    [
+      "rain",
+      5
+    ]
+  ],
+  "out": "C:\\Users\\Ronak Daniel\\VFM-CV\\results\\benchmark.csv",
+  "seconds": 441.3
+}

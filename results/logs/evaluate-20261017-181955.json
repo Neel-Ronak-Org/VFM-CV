@@ -1,0 +1,29 @@
+{
+  "git": "8b4bbea-dirty",
+  "host": "LAPTOP-9RT095IQ",
+  "python": "3.11.17",
+  "args": {
+    "models": [
+      "ZoomNet"
+    ],
+    "datasets": [
+      "NC4K"
+    ],
+    "corruptions": [
+      "clean",
+      "all"
+    ],
+    "severities": null,
+    "out": "results/benchmark.csv",
+    "data_root": null,
+    "device": null,
+    "precision": "auto",
+    "limit": null,
+    "save_pred": 0,
+    "workers": 2,
+    "max_hours": 0.7845
+  },
+  "stopped_early": true,
+  "out": "C:\\Users\\Ronak Daniel\\VFM-CV\\results\\benchmark.csv",
+  "seconds": 2861.1
+}
