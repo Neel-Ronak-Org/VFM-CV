@@ -1,0 +1,4 @@
+# Ours-Aug: + a random SEEN corruption at a random severity on 50% of the samples.
+base: base.yaml
+augment:
+  corruption_prob: 0.5

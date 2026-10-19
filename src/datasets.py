@@ -120,3 +120,72 @@ def verify_dataset(ds: CODDataset, expected: int | None = None, check_pixels: bo
     report["ok"] = bool(report["count_ok"] and report["missing_masks"] == 0 and report["missing_images"] == 0
                         and report["unreadable"] == 0)
     return report
+
+
+class CODTrainSet:
+    """Training views for our adapter (torch-free; numpy arrays are collated by the DataLoader).
+
+    Per sample, with an RNG seeded by (seed, epoch, index) so every epoch is reproducible and a run
+    can resume mid-epoch:
+      1. optional corruption of the ORIGINAL-resolution image (as in the benchmark, where corruptions
+         are applied before a model resizes its input), drawn from `corruptions` at a random severity;
+      2. the same geometric augmentation for every view: random crop keeping `crop_scale` of each side,
+         horizontal flip, resize to img_size x img_size (cv2 bilinear, as at test time).
+    No photometric augmentation (colour jitter, noise), so Ours-Clean never sees corruption-like inputs.
+
+    paired=False: returns {"image", "mask", "corrupted"}; the image is corrupted with prob corruption_prob.
+    paired=True:  returns {"image" (clean), "image_corr" (always corrupted), "mask"} for the consistency loss.
+    Images are uint8 [3,S,S]; the mask is float32 [1,S,S] in [0,1] (bilinear-resized, soft edges).
+    """
+
+    def __init__(self, base: CODDataset, img_size: int, hflip: bool = True, crop_scale=(0.75, 1.0),
+                 corruption_prob: float = 0.0, corruptions=(), severities=(1, 2, 3, 4, 5), paired: bool = False,
+                 seed: int = 0):
+        if (corruption_prob > 0 or paired) and not corruptions:
+            raise ValueError("corruption augmentation needs a non-empty corruption list")
+        self.base, self.img_size, self.hflip = base, img_size, hflip
+        self.crop_scale = tuple(crop_scale)
+        self.corruption_prob, self.corruptions, self.severities = corruption_prob, list(corruptions), list(severities)
+        self.paired, self.seed, self.epoch = paired, seed, 0
+
+    def __len__(self) -> int:
+        return len(self.base)
+
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = epoch
+
+    def _geometry(self, rng, h, w):
+        s = rng.uniform(*self.crop_scale)
+        ch, cw = max(1, int(round(h * s))), max(1, int(round(w * s)))
+        y0, x0 = int(rng.integers(0, h - ch + 1)), int(rng.integers(0, w - cw + 1))
+        return (y0, x0, ch, cw), bool(self.hflip and rng.random() < 0.5)
+
+    def _apply(self, arr, geom, interp):
+        (y0, x0, ch, cw), flip = geom
+        arr = arr[y0:y0 + ch, x0:x0 + cw]
+        if flip:
+            arr = arr[:, ::-1]
+        return cv2.resize(np.ascontiguousarray(arr), (self.img_size, self.img_size), interpolation=interp)
+
+    def _corrupt(self, rng, img):
+        from src.corruptions import apply_corruption
+
+        c = self.corruptions[int(rng.integers(len(self.corruptions)))]
+        s = int(self.severities[int(rng.integers(len(self.severities)))])
+        return apply_corruption(img, c, s, seed=int(rng.integers(2**31)))
+
+    def __getitem__(self, i: int) -> dict:
+        rng = np.random.default_rng([self.seed, self.epoch, i])
+        _, img, mask = self.base[i]
+        if mask.shape != img.shape[:2]:
+            mask = cv2.resize(mask.astype(np.uint8), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
+        corrupt = self.paired or rng.random() < self.corruption_prob
+        corr = self._corrupt(rng, img) if corrupt else None
+        geom = self._geometry(rng, *img.shape[:2])
+        out = {"mask": self._apply(mask.astype(np.float32), geom, cv2.INTER_LINEAR)[None]}
+        chw = lambda a: self._apply(a, geom, cv2.INTER_LINEAR).transpose(2, 0, 1).copy()  # noqa: E731
+        if self.paired:
+            out["image"], out["image_corr"] = chw(img), chw(corr)
+        else:
+            out["image"], out["corrupted"] = chw(corr if corrupt else img), corrupt
+        return out

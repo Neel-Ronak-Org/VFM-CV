@@ -1,0 +1,4 @@
+# Ablation: symmetric Bernoulli KL instead of MSE
+base: ours_full.yaml
+consistency:
+  type: sym_kl

@@ -1,0 +1,4 @@
+# Ablation: consistency weight lambda = 0.5
+base: ours_full.yaml
+consistency:
+  weight: 0.5

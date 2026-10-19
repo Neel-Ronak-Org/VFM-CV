@@ -141,4 +141,49 @@ So *knowing where the object is* does not solve camouflage for a zero-shot SAM. 
 
 Each is reported for all corruptions, seen and unseen ones, each family, and each single corruption.
 
-*(Sections on our adapter, the consistency loss and efficiency metrics are added in Phases 4–5.)*
+## 9. Our model: the Robust Lightweight SAM Adapter (Phase 4)
+
+**In one sentence:** we take MobileSAM, a small version of Meta's Segment Anything Model, freeze its image encoder, add about 0.2 M trainable "adapter" parameters inside it, and teach its mask decoder to find camouflaged objects without any user clicks, while training on corrupted images so it stays reliable when the camera blurs, adds noise or compresses.
+
+**The parts** (`src/models/robust_adapter.py`):
+
+| Part | What it does | Trained? | Parameters |
+|---|---|---|---|
+| TinyViT image encoder (MobileSAM) | turns a 1024×1024 image into a 64×64 grid of 256-number feature vectors | **frozen** | 6.07 M |
+| Bottleneck adapters, one per transformer block (10 blocks) | small two-layer networks added next to each block's MLP: `x + MLP(x) + Up(GELU(Down(LN(x))))` | yes | ≈0.2 M |
+| Learned prompt tokens (4) + learned dense prompt | replace the clicks/boxes SAM normally needs | yes | ≈1 k |
+| SAM mask decoder | a small two-way transformer: prompt tokens attend to image features and vice versa, then upsample to a mask | yes (starts from MobileSAM) | ≈3.5 M |
+
+In total about 3.7 M of the 10.3 M parameters are trained (`count_params()`).
+
+**Why freeze the encoder?** A foundation model has already learned general visual features from 11 M images. Retraining all of it on our 4,040 camouflage images would be slow on a 4 GB GPU and would risk forgetting those features. Adapters are the standard compromise (SAM-Adapter, AdaptFormer, LoRA): the big network stays fixed and small add-on layers steer it towards the new task.
+
+**Why do adapters start at zero?** Each adapter's last layer is initialised to zero, so at the start of training the encoder gives *exactly* MobileSAM's original features. A unit test checks this to five decimal places. Training then only moves away from the pretrained model as far as the data requires.
+
+**How "prompt-free" works.** SAM normally needs a click or a box to know which object to segment. We give it four learned vectors instead. Two start as SAM's own embedding of "a box around the whole image" and two start small and random. During training they learn to mean "the camouflaged object in this image". SAM's original decoder also repeats every image once per prompt, which would mix up the images in a batch. Our `decode()` does the same maths once per image, and a test checks it matches SAM's decoder.
+
+**Training** (`src/train.py`, configs in `configs/train/`):
+- **Loss:** weighted BCE + weighted IoU, the "structure loss" of PraNet and SINet-V2. Pixels near the object boundary count up to 6× more, because boundaries are where camouflage is hardest. The boundary window is scaled from PraNet's 31 px at 352 px input to our resolution.
+- **Augmentation:** random crop (75–100% of each side) and horizontal flip only. We deliberately use **no colour jitter or noise**, because those overlap with our test corruptions and would blur the line between Ours-Clean and Ours-Aug.
+- **Corruption augmentation (Ours-Aug):** 50% of training images get one of the four **seen** corruptions (Gaussian noise, Gaussian blur, brightness, JPEG) at a random severity 1–5. The script refuses to train on unseen corruptions, which protects the held-out protocol.
+- **Consistency loss (Ours-Full):** every image gives a clean view and a corrupted view with the same crop and flip. The supervised loss is averaged over both views, so half the supervised views are corrupted, the same as Ours-Aug. We add λ × the mean squared difference between the two predicted maps. With *stop-gradient* on the clean view, the clean prediction acts as a fixed teacher: the model learns to make its corrupted-image answer match its clean-image answer, rather than making the clean answer worse.
+- **Variants:** Ours-Clean (no corruption), Ours-Aug (+ augmentation), Ours-Full (+ consistency, λ = 1). Ablations: λ ∈ {0.1, 0.5}, symmetric KL instead of MSE, no stop-gradient, LoRA instead of bottleneck adapters, and no adapters (decoder only).
+- **Optimiser:** AdamW, learning rate 2e-4 with 100 warm-up steps then cosine decay, effective batch 8 (2 × 4 accumulation), fp16 mixed precision, gradient clipping at 1.0.
+- **Memory tricks:** the frozen convolutional first stage runs without gradients; gradient checkpointing recomputes each transformer block's activations during the backward pass instead of storing them.
+- **VRAM ladder**, if `--profile` shows the GPU is nearly full or slow: (1) 1024 px, batch 2; (2) `--set train.batch_size=1 train.grad_accum=8`; (3) `--set data.img_size=512` (smaller image, lower accuracy expected; log the cost); (4) EfficientSAM backbone (not implemented unless needed).
+- **Reproducibility:** the image order and every crop, flip and corruption are seeded by (seed, epoch, image index). A run stopped by `--max-hours`, Ctrl+C or a crash resumes with `--resume` on exactly the same batch sequence. Each run logs its config, git hash, loss curve and timings in `results/train/<run>/`.
+- **Model selection:** we use the **last** epoch and never pick checkpoints by test-set score. A checkpoint from an unfinished run is labelled `Ours-Full@ep7.3-unfinished` in every output, so it can never be mistaken for the final model.
+
+**How novel is it? (be ready for this question)** Each ingredient is known: frozen SAM with adapters (SAM-Adapter), prompt-free SAM decoding, corruption augmentation, and consistency losses (AugMix and others). What's new is the combination for camouflage on a 4 GB laptop GPU, together with the **held-out-corruption evaluation**: training on four corruption types and testing on four others. That tests whether robustness transfers rather than just memorising the augmentations. RobustSAM (CVPR 2024; consistency losses to make SAM robust) and RobustCODLite (COD10K-C's own lightweight model, with corruption augmentation and a consistency loss) are the closest prior work (see `NOVELTY_REPORT.md`). The benchmark is the main contribution and the method is the secondary one.
+
+## 10. The demo (Phase 6)
+
+`python demo/app.py` opens a web page (Gradio) in your browser:
+- **Detector tab:**
+  - choose one of 12 test images (picked from your local test sets with a fixed seed, or listed in `demo/examples.txt`), upload a photo, or put photos in `demo/my_photos/`;
+  - choose a corruption and a severity from 0 to 5. The dropdown says which corruptions the adapter saw in training and which it never saw;
+  - the page shows the corrupted input, then each model's prediction as a coloured overlay with its outline at probability 0.5, and each model's latency on your GPU;
+  - for test images, "Show ground truth" adds the true mask and each model's S-measure and MAE *on that image*.
+- **Benchmark results tab:** the clean results table, the robustness summary (while the benchmark is still running, `complete` says which groups are finished), progress per model, efficiency, and the latest training-log entry. All of it is read from `results/*.csv`, so the demo can never show a number the code didn't produce.
+
+Default models: SINet-V2 plus our best trained variant (Full, then Aug, then Clean). Other models can be added with `--models`. Without a GPU it runs on the CPU, more slowly.

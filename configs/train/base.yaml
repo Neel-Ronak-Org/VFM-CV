@@ -1,0 +1,36 @@
+# Shared settings for our adapter (src/train.py). Variant files set `base: base.yaml` and override.
+seed: 0
+data:
+  split: train            # configs/data.yaml -> TrainDataset (COD10K-train 3040 + CAMO-train 1000)
+  img_size: 1024          # VRAM ladder step 3: 512
+  hflip: true
+  crop_scale: [0.75, 1.0] # random crop keeping 75-100% of each side
+  num_workers: 4          # CPU loader processes (corruptions are applied on the fly)
+model:
+  adapter: bottleneck     # bottleneck | lora | none
+  adapter_ratio: 0.25     # bottleneck hidden = dim * ratio
+  lora_rank: 8
+  n_prompt_tokens: 4
+  sam_weights: checkpoints/mobile_sam/mobile_sam.pt
+augment:
+  corruption_prob: 0.0    # fraction of single-view samples that get a corruption
+  corruptions: seen       # held-out protocol: ONLY the seen corruptions (configs/corruptions.yaml)
+  severities: [1, 2, 3, 4, 5]
+consistency:
+  weight: 0.0             # lambda; > 0 switches to paired clean + corrupted views
+  type: mse               # mse | sym_kl
+  stopgrad_clean: true
+train:
+  epochs: 30
+  batch_size: 2           # VRAM ladder step 2: 1 with grad_accum 8
+  grad_accum: 4           # effective batch 8
+  lr: 2.0e-4
+  weight_decay: 1.0e-4
+  warmup_steps: 100       # optimizer steps
+  min_lr: 1.0e-6
+  amp: fp16               # fp16 | bf16 | none (CPU always runs fp32)
+  grad_checkpointing: true
+  grad_clip: 1.0
+  time_budget_hours: null # e.g. 8: after ~30 batches, cut `epochs` so the run fits (cosine schedule follows)
+  log_every: 25           # optimizer steps
+  save_every_minutes: 15

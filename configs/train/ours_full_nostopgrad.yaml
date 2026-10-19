@@ -1,0 +1,4 @@
+# Ablation: gradients flow through BOTH views of the consistency loss
+base: ours_full.yaml
+consistency:
+  stopgrad_clean: false
