@@ -21,7 +21,7 @@ consistency:
   type: mse               # mse | sym_kl
   stopgrad_clean: true
 train:
-  epochs: 15              # Ours-Full's first run: 15 epochs (4.05 h on the RTX 3050); all variants match it
+  epochs: 30              # all variants; the first 15-epoch Ours-Full is kept as run ours_full_ep15 (ablation)
   batch_size: 2           # VRAM ladder step 2: 1 with grad_accum 8
   grad_accum: 4           # effective batch 8
   lr: 2.0e-4

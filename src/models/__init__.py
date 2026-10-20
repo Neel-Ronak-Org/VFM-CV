@@ -17,6 +17,7 @@ REGISTRY = {
     "Ours-Clean": "src.models.robust_adapter:OursClean",
     "Ours-Aug": "src.models.robust_adapter:OursAug",
     "Ours-Full": "src.models.robust_adapter:OursFull",
+    "Ours-Full-15ep": "src.models.robust_adapter:OursFullEp15",
     # Analysis only -- uses the ground-truth box, NOT a fair competitor:
     "Oracle-Box-MobileSAM": "src.models.oracle_box_sam:OracleBoxMobileSAM",
 }

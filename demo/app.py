@@ -41,7 +41,7 @@ GALLERY_PICK = {"COD10K": 6, "CAMO": 3, "CHAMELEON": 3}  # 12 images, chosen wit
 MAX_SIDE = 1600  # larger uploads are downscaled (phone photos) to keep corruption + inference fast
 COLORS = [(255, 64, 64), (64, 200, 255), (80, 255, 80), (255, 200, 0), (220, 80, 255)]
 GT_COLOR = (255, 255, 255)
-OURS_PREFERENCE = ["Ours-Full", "Ours-Aug", "Ours-Clean"]
+OURS_PREFERENCE = ["Ours-Full", "Ours-Full-15ep", "Ours-Aug", "Ours-Clean"]
 
 
 # ---------------------------------------------------------------------------------------- images
@@ -107,18 +107,34 @@ def overlay(img: np.ndarray, prob: np.ndarray, color) -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------------------- models
+def pick_ours(dev: str):
+    """The first FINISHED variant in OURS_PREFERENCE (so a run still training never replaces a finished
+    model); if none is finished, the first one that loads (labelled "...-unfinished")."""
+    import warnings
+
+    fallback = None
+    for name in OURS_PREFERENCE:
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                m = build_model(name, device=dev)
+        except FileNotFoundError:
+            continue
+        if m.finished:
+            return m
+        fallback = fallback or m
+    return fallback
+
+
 def load_models(names: list[str] | None, device: str | None) -> dict:
     """name -> model or error string. Without --models: SINet-V2 + the best trained variant of ours."""
     dev = str(pick_device(device))
     models: dict = {}
     if names is None:
         names = ["SINet-V2"]
-        for ours in OURS_PREFERENCE:
-            try:
-                models[ours] = build_model(ours, device=dev)
-                break
-            except FileNotFoundError:
-                continue
+        pick = pick_ours(dev)
+        if pick:
+            models[pick.name] = pick
         else:
             models["Ours-Full"] = "not trained yet: python -m src.train --config configs/train/ours_full.yaml"
     for n in names:
@@ -127,7 +143,7 @@ def load_models(names: list[str] | None, device: str | None) -> dict:
         except Exception as e:  # show the reason in the UI instead of crashing the demo
             models[n] = f"unavailable: {type(e).__name__}: {e}"
     # keep SINet-V2 first, then ours, as the brief's layout
-    order = [n for n in (names + OURS_PREFERENCE) if n in models]
+    order = [n for n in names if n in models] + [n for n in models if n not in names]
     return {n: models[n] for n in dict.fromkeys(order)}
 
 

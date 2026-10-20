@@ -299,3 +299,8 @@ class OursAug(RobustAdapterCOD):
 
 class OursFull(RobustAdapterCOD):
     name, run = "Ours-Full", "ours_full"
+
+
+class OursFullEp15(RobustAdapterCOD):
+    """First Ours-Full run (15 epochs; schedule fitted by a time budget). Kept for the epochs ablation."""
+    name, run = "Ours-Full-15ep", "ours_full_ep15"

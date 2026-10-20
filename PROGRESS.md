@@ -379,15 +379,19 @@ git add results/ ; git commit -m "Ours-Full training" ; git push
 - Resuming a finished run now says "already finished" and writes nothing.
 - `time_budget_hours` now sizes the run from the **real wall time of the first epoch**, not the first ~30 batches. Those under-estimated speed by about 30% here, so the 6 h budget gave a 4 h run. The cosine schedule for epoch 1 barely changes (warm-up is independent of the total).
 - `--set` accepts numbers written like `1e-3`; YAML reads those as text.
-- `configs/train/base.yaml`: `epochs: 15`, so Ours-Clean and Ours-Aug use the same schedule as the trained Ours-Full. This matches exactly: the budget only changed the epoch count. Paper: "15 epochs".
-- 96 tests pass.
+- **Decision (student): train every variant for the planned 30 epochs.** `base.yaml` stays at `epochs: 30`. The 15-epoch run is kept, not overwritten: rename its folders to `ours_full_ep15` and it is registered as model `Ours-Full-15ep`, both as the demo fallback and for a 15-vs-30-epoch ablation. A finished cosine schedule can't simply be extended (its learning rate has already decayed to the minimum), so the 30-epoch Ours-Full is a fresh run.
+- Demo picks the first *finished* Ours variant (Full, then Full-15ep, Aug, Clean), so a run still training never replaces a finished model on screen.
+- 97 tests pass.
 
 ### Next (student)
 ```powershell
-python -m src.evaluate --models Ours-Full --datasets CHAMELEON --corruptions clean
-python -m src.evaluate --models Ours-Full --datasets CHAMELEON --corruptions all
-python -m src.train --config configs/train/ours_clean.yaml --set train.epochs=15   # ~2-3 h (single view)
-python -m src.train --config configs/train/ours_aug.yaml --set train.epochs=15     # ~2-3 h, if time
-python demo/app.py
-git add results/ ; git commit -m "Ours-Full trained" ; git push
+# keep the 15-epoch run under its own name (folders only; nothing is retrained)
+Rename-Item checkpoints\ours\ours_full ours_full_ep15
+Rename-Item results\train\ours_full ours_full_ep15
+python -m src.evaluate --models Ours-Full-15ep --datasets CHAMELEON --corruptions clean
+# 30-epoch runs (~8 h for Full, roughly half each for Clean / Aug); resume any of them with --resume
+python -m src.train --config configs/train/ours_full.yaml
+python -m src.train --config configs/train/ours_clean.yaml
+python -m src.train --config configs/train/ours_aug.yaml
+git add results/ ; git commit -m "Ours training" ; git push
 ```
