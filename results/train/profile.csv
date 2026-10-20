@@ -1,0 +1,2 @@
+run,img_size,batch_size,grad_accum,adapter,paired,grad_checkpointing,amp,num_workers,device,gpu,sec_per_batch,peak_vram_mb,epoch_minutes,hours_for_config_epochs,trainable_params,git,date
+ours_full,1024,2,4,bottleneck,True,True,fp16,4,cuda,NVIDIA GeForce RTX 3050 Laptop GPU,0.6825,1426.1,23.0,11.49,3709200,cbb0e96,2026-10-19 23:50
