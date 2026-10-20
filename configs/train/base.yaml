@@ -21,7 +21,7 @@ consistency:
   type: mse               # mse | sym_kl
   stopgrad_clean: true
 train:
-  epochs: 30
+  epochs: 30              # all variants; the first 15-epoch Ours-Full is kept as run ours_full_ep15 (ablation)
   batch_size: 2           # VRAM ladder step 2: 1 with grad_accum 8
   grad_accum: 4           # effective batch 8
   lr: 2.0e-4
@@ -31,6 +31,6 @@ train:
   amp: fp16               # fp16 | bf16 | none (CPU always runs fp32)
   grad_checkpointing: true
   grad_clip: 1.0
-  time_budget_hours: null # e.g. 8: after ~30 batches, cut `epochs` so the run fits (cosine schedule follows)
+  time_budget_hours: null # e.g. 8: after the first epoch, cut `epochs` so the run fits (cosine schedule follows)
   log_every: 25           # optimizer steps
   save_every_minutes: 15

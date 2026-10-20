@@ -207,14 +207,26 @@ def test_train_end_to_end_and_resume(train_root, tmp_path):
     s = train(_cfg("ours_full"), max_hours=1e-9, **kw)  # stops after the first optimizer step
     assert s["status"] == "stopped" and (tmp_path / "ck/ours_full/last.pt").exists()
     assert not (tmp_path / "ck/ours_full/final.pt").exists()
+    with pytest.raises(RuntimeError, match="config differs"):
+        train(_cfg("ours_full", "consistency.weight=0.5"), resume=True, **kw)
     s = train(_cfg("ours_full"), resume=True, **kw)
     assert s["status"] == "finished" and s["epochs_done"] == 2 and s["optimizer_steps"] == 4
     ck = torch.load(tmp_path / "ck/ours_full/final.pt", weights_only=False)
     assert ck["finished"] and "optimizer" not in ck
     log = (tmp_path / "logs/ours_full/log.csv").read_text().splitlines()
     assert log[0].startswith("epoch,step") and len(log) == 5  # header + 4 optimizer steps
-    with pytest.raises(RuntimeError, match="config differs"):
-        train(_cfg("ours_full", "consistency.weight=0.5"), resume=True, **kw)
+    summary = (tmp_path / "logs/ours_full/summary.json").read_text()
+    # resuming a finished run changes nothing (it used to overwrite summary.json with empty timings)
+    assert train(_cfg("ours_full"), resume=True, **kw)["status"] == "already_finished"
+    assert (tmp_path / "logs/ours_full/summary.json").read_text() == summary
+
+
+@pytest.mark.parametrize("budget,epochs", [(1e-9, 1), (100, 2)])
+def test_time_budget_fits_epochs_after_first_epoch(train_root, tmp_path, budget, epochs):
+    from src.train import train
+    s = train(_cfg("ours_clean", f"train.time_budget_hours={budget}"), device="cpu", data_root=train_root,
+              ckpt_root=tmp_path / "ck", log_root=tmp_path / "logs")
+    assert s["status"] == "finished" and s["epochs_planned"] == epochs == s["epochs_done"]
 
 
 def test_profile_writes_row_and_no_checkpoint(train_root, tmp_path):

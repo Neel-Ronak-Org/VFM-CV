@@ -69,7 +69,13 @@ def load_config(path: str | Path, overrides: list[str] | None = None, _top: bool
         *parents, leaf = key.split(".")
         for p in parents:
             node = node.setdefault(p, {})
-        node[leaf] = yaml.safe_load(value)
+        v = yaml.safe_load(value)
+        if isinstance(v, str):  # YAML reads "1e-3" as text; accept it as a number
+            try:
+                v = float(v)
+            except ValueError:
+                pass
+        node[leaf] = v
     if not cfg.get("run_name"):
         cfg["run_name"] = path.stem
     return cfg
@@ -167,6 +173,10 @@ def train(cfg: dict, *, resume: bool = False, profile: int = 0, max_hours: float
         if not last.exists():
             raise FileNotFoundError(f"--resume: no {last}")
         ck = torch.load(last, map_location="cpu", weights_only=False)
+        if ck["state"]["epoch"] >= ck["state"]["epochs"] and (ckpt_dir / "final.pt").exists():
+            print(f"{run} already finished ({ck['state']['epochs']} epochs, {ck['state']['elapsed'] / 3600:.2f} h): "
+                  f"{ckpt_dir / 'final.pt'} is the trained model. Nothing to resume.")
+            return {"run": run, "status": "already_finished", "epochs_done": ck["state"]["epoch"]}
         diff = {k for k, v in flatten(cfg).items() if flatten(ck["train_config"]).get(k) != v} - RESUME_SAFE_KEYS
         if diff:
             raise RuntimeError(f"config differs from the run being resumed: {sorted(diff)}")
@@ -220,6 +230,7 @@ def train(cfg: dict, *, resume: bool = False, profile: int = 0, max_hours: float
             g = torch.Generator().manual_seed(cfg["seed"] * 100003 + epoch)
             order = torch.randperm(len(ds), generator=g)[: batches_per_epoch * bs].tolist()
             start = state["batch"]
+            t_epoch = time.time()
             loader = DataLoader(ds, batch_size=bs, sampler=order[start * bs:], num_workers=cfg["data"]["num_workers"],
                                 pin_memory=dev.type == "cuda", worker_init_fn=_worker_init)
             sync()
@@ -276,12 +287,6 @@ def train(cfg: dict, *, resume: bool = False, profile: int = 0, max_hours: float
 
                 if profile and n_batches >= profile:
                     return _report_profile(cfg, spb, batches_per_epoch, peak_mb(), dev, params, log_root)
-                if (not state["epochs_fixed"] and tc.get("time_budget_hours") and timed_n >= 30):
-                    epoch_h = spb * batches_per_epoch / 3600
-                    fit = int((tc["time_budget_hours"] - state["elapsed"] / 3600) / epoch_h) + epoch
-                    state["epochs"] = max(epoch + 1, min(tc["epochs"], fit))
-                    print(f"time budget {tc['time_budget_hours']} h, {epoch_h * 60:.1f} min/epoch -> {state['epochs']} epochs")
-                    state["epochs_fixed"] = True
                 if log_f and boundary and state["step"] % tc["log_every"] == 0 and acc["n"]:
                     left = (state["epochs"] - epoch) * batches_per_epoch - state["batch"]
                     row = {"epoch": epoch, "step": state["step"], "batch": state["batch"], "lr": f"{lr_now:.3e}",
@@ -303,6 +308,14 @@ def train(cfg: dict, *, resume: bool = False, profile: int = 0, max_hours: float
             if status == "stopped":
                 break
             state["epoch"], state["batch"] = epoch + 1, 0
+            if not state["epochs_fixed"] and tc.get("time_budget_hours") and not profile:
+                # Fit the run to the budget using the real wall time of this epoch (loader start-up included);
+                # timing only the first batches under-estimated speed by ~30% on the laptop.
+                epoch_h = (time.time() - t_epoch) / 3600 * batches_per_epoch / (batches_per_epoch - start)
+                fit = epoch + 1 + int((tc["time_budget_hours"] - state["elapsed"] / 3600) / epoch_h)
+                state["epochs"] = max(epoch + 1, min(tc["epochs"], fit))
+                state["epochs_fixed"] = True
+                print(f"time budget {tc['time_budget_hours']} h, {epoch_h * 60:.1f} min/epoch -> {state['epochs']} epochs")
             if not profile:
                 save(last)
                 t_last_save = time.time()

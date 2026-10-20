@@ -365,3 +365,33 @@ python demo/app.py
 # 5. if time before Wednesday: Ours-Clean (same commands with ours_clean.yaml) for the "with vs without robustness training" comparison
 git add results/ ; git commit -m "Ours-Full training" ; git push
 ```
+
+---
+
+## Session 10 — 2026-10-20 (Claude, cloud container) — Ours-Full trained; training-script fixes
+
+### From the student (laptop)
+- `--profile 40` (Ours-Full, 1024 px, batch 2 × accum 4, AMP, grad checkpointing): 0.68 s/batch, **peak 1426 MB** of 4 GB (no VRAM ladder needed), estimated 23 min/epoch.
+- **Ours-Full trained** with `time_budget_hours=6`. The budget picked **15 epochs**, which completed in **4.05 h** (about 16 min/epoch: faster than the start-up estimate) on 2026-10-20. Result: `checkpoints/ours/ours_full/final.pt`.
+- `--resume` afterwards found the run already complete and re-saved `final.pt` with the same weights. As a side effect it overwrote `results/train/ours_full/summary.json` with empty timings (sec_per_batch 0, peak 74 MB). The real per-step timings and VRAM are in `results/train/ours_full/log.csv`.
+
+### Fixes
+- Resuming a finished run now says "already finished" and writes nothing.
+- `time_budget_hours` now sizes the run from the **real wall time of the first epoch**, not the first ~30 batches. Those under-estimated speed by about 30% here, so the 6 h budget gave a 4 h run. The cosine schedule for epoch 1 barely changes (warm-up is independent of the total).
+- `--set` accepts numbers written like `1e-3`; YAML reads those as text.
+- **Decision (student): train every variant for the planned 30 epochs.** `base.yaml` stays at `epochs: 30`. The 15-epoch run is kept, not overwritten: rename its folders to `ours_full_ep15` and it is registered as model `Ours-Full-15ep`, both as the demo fallback and for a 15-vs-30-epoch ablation. A finished cosine schedule can't simply be extended (its learning rate has already decayed to the minimum), so the 30-epoch Ours-Full is a fresh run.
+- Demo picks the first *finished* Ours variant (Full, then Full-15ep, Aug, Clean), so a run still training never replaces a finished model on screen.
+- 97 tests pass.
+
+### Next (student)
+```powershell
+# keep the 15-epoch run under its own name (folders only; nothing is retrained)
+Rename-Item checkpoints\ours\ours_full ours_full_ep15
+Rename-Item results\train\ours_full ours_full_ep15
+python -m src.evaluate --models Ours-Full-15ep --datasets CHAMELEON --corruptions clean
+# 30-epoch runs (~8 h for Full, roughly half each for Clean / Aug); resume any of them with --resume
+python -m src.train --config configs/train/ours_full.yaml
+python -m src.train --config configs/train/ours_clean.yaml
+python -m src.train --config configs/train/ours_aug.yaml
+git add results/ ; git commit -m "Ours training" ; git push
+```

@@ -50,3 +50,23 @@ def test_results_tables_and_app_build(models):
     assert all(len(t.columns) for t in tables.values())
     app = demo.build_app(models, [], "CPU")
     assert app is not None
+
+
+def test_demo_prefers_finished_ours(monkeypatch):
+    class Fake:
+        def __init__(self, name, finished):
+            self.name, self.finished = name, finished
+
+    available = {"Ours-Full": Fake("Ours-Full@ep3.0-unfinished", False), "Ours-Full-15ep": Fake("Ours-Full-15ep", True)}
+
+    def fake_build(name, device=None):
+        if name not in available:
+            raise FileNotFoundError(name)
+        return available[name]
+
+    monkeypatch.setattr(demo, "build_model", fake_build)
+    assert demo.pick_ours("cpu").name == "Ours-Full-15ep"
+    available["Ours-Full-15ep"] = Fake("Ours-Full-15ep@ep9.0-unfinished", False)
+    assert demo.pick_ours("cpu").name == "Ours-Full@ep3.0-unfinished"
+    available.clear()
+    assert demo.pick_ours("cpu") is None
