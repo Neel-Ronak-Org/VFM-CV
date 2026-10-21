@@ -48,25 +48,40 @@ def test_corruption_labels_mark_unseen():
 def test_results_tables_and_app_build(models):
     tables = demo.results_tables()  # reads the committed results/*.csv
     assert all(len(t.columns) for t in tables.values())
-    app = demo.build_app(models, [], "CPU")
+    pool = demo.ModelPool("cpu")
+    pool.models.update(models)
+    app = demo.build_app(pool, [], "CPU", list(models))
     assert app is not None
 
 
 def test_demo_prefers_finished_ours(monkeypatch):
-    class Fake:
-        def __init__(self, name, finished):
-            self.name, self.finished = name, finished
+    status = {"Ours-Full": "unfinished", "Ours-Full-15ep": "finished", "Ours-Aug": "missing", "Ours-Clean": "missing"}
+    monkeypatch.setattr(demo, "ours_status", lambda n: status.get(n, "missing"))
+    assert demo.pick_ours() == "Ours-Full-15ep"
+    assert demo.default_selection(None) == ["SINet-V2", "Ours-Full-15ep"]
+    assert demo.default_selection(["PFNet"]) == ["PFNet"]
+    status["Ours-Full-15ep"] = "unfinished"
+    assert demo.pick_ours() == "Ours-Full"
+    assert "Ours-Aug" not in demo.pickable() and "SINet-V2" in demo.pickable()
+    status.update({k: "missing" for k in status})
+    assert demo.pick_ours() is None and demo.default_selection(None) == ["SINet-V2"]
 
-    available = {"Ours-Full": Fake("Ours-Full@ep3.0-unfinished", False), "Ours-Full-15ep": Fake("Ours-Full-15ep", True)}
+
+def test_model_pool_loads_lazily_and_reports_errors(monkeypatch):
+    calls = []
 
     def fake_build(name, device=None):
-        if name not in available:
-            raise FileNotFoundError(name)
-        return available[name]
+        calls.append(name)
+        if name == "Broken":
+            raise FileNotFoundError("no weights")
+        return build_model("debug-centre", device="cpu")
 
     monkeypatch.setattr(demo, "build_model", fake_build)
-    assert demo.pick_ours("cpu").name == "Ours-Full-15ep"
-    available["Ours-Full-15ep"] = Fake("Ours-Full-15ep@ep9.0-unfinished", False)
-    assert demo.pick_ours("cpu").name == "Ours-Full@ep3.0-unfinished"
-    available.clear()
-    assert demo.pick_ours("cpu") is None
+    pool = demo.ModelPool("cpu")
+    assert calls == []
+    got = pool.subset(["A", "Broken"])
+    assert not isinstance(got["A"], str) and got["Broken"].startswith("unavailable")
+    pool.subset(["A"])
+    assert calls == ["A", "Broken"]  # cached, not rebuilt
+    pool.release(keep=["A"])
+    assert list(pool.models) == ["A"]

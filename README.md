@@ -65,7 +65,14 @@ Needs `checkpoints/mobile_sam/mobile_sam.pt` (`python scripts/download_data.py -
 python demo/app.py                    # SINet-V2 vs our best trained adapter; opens in the browser
 python demo/app.py --device cpu       # without a GPU
 ```
-Put your own photos in `demo/my_photos/`. Presentation shot list: `docs/DEMO_SCRIPT.md`.
+Upload your own photo (drag & drop) or put photos in `demo/my_photos/`, then tick up to 6 models to compare side by side (baselines and every trained Ours variant; each loads the first time it is ticked). Presentation shot list: `docs/DEMO_SCRIPT.md`.
+
+## Resolution test (diagnostic)
+
+```bash
+python scripts/resolution_test.py                    # Ours-Full / Ours-Clean fed 352/512/768-px views, CHAMELEON
+python scripts/resolution_test.py --dataset COD10K
+```
 
 ## Repository layout
 

@@ -262,10 +262,22 @@ def load_trained(path: str | Path, sam_weights: str | Path | None = DEFAULT_SAM_
     return net.eval(), ckpt
 
 
+def low_res_view(img: np.ndarray, size: int) -> np.ndarray:
+    """Resolution test: the image as a 352-px baseline would see it (PIL bilinear with antialiasing to
+    size x size, as in normalize_imagenet), resized back to the original shape. This removes the detail
+    a low-resolution model never receives, including much of the noise / JPEG / rain corruption."""
+    from PIL import Image
+
+    small = Image.fromarray(img).resize((size, size), Image.BILINEAR)
+    return np.asarray(small.resize((img.shape[1], img.shape[0]), Image.BILINEAR))
+
+
 class RobustAdapterCOD(CODModel):
-    """CODModel wrapper. Subclasses fix the run name; `checkpoint=` overrides the file."""
+    """CODModel wrapper. Subclasses fix the run name; `checkpoint=` overrides the file.
+    `input_res` (resolution test only): first reduce the image to input_res x input_res, see low_res_view."""
     name = "Ours"
     run = None
+    input_res: int | None = None
     source = "this repo (src/train.py), frozen MobileSAM f706ad9 encoder"
     default_fp16 = True
 
@@ -285,6 +297,8 @@ class RobustAdapterCOD(CODModel):
         self.source = f"{self.source}; {path.relative_to(REPO) if path.is_relative_to(REPO) else path} (epoch {self.epoch})"
 
     def _forward(self, img: np.ndarray) -> torch.Tensor:
+        if self.input_res:
+            img = low_res_view(img, self.input_res)
         x = torch.from_numpy(resize_image(img, self.net.img_size).transpose(2, 0, 1)).unsqueeze(0).to(self.device)
         return self.net(normalize_batch(x)).float().sigmoid()
 
@@ -304,3 +318,20 @@ class OursFull(RobustAdapterCOD):
 class OursFullEp15(RobustAdapterCOD):
     """First Ours-Full run (15 epochs; schedule fitted by a time budget). Kept for the epochs ablation."""
     name, run = "Ours-Full-15ep", "ours_full_ep15"
+
+
+# --- Resolution test (diagnostic, not new models): the same trained weights, fed a low-resolution view ---
+class OursFullIn352(OursFull):
+    name, input_res = "Ours-Full-in352", 352
+
+
+class OursFullIn512(OursFull):
+    name, input_res = "Ours-Full-in512", 512
+
+
+class OursFullIn768(OursFull):
+    name, input_res = "Ours-Full-in768", 768
+
+
+class OursCleanIn352(OursClean):
+    name, input_res = "Ours-Clean-in352", 352

@@ -438,3 +438,22 @@ Paired bootstrap on per-image mean Sα under corruption:
 ### Next
 - After the demo: evaluate Ours-Clean, Ours-Aug and Ours-Full on COD10K (the main table; n = 2026 is far more reliable than 76).
 - Resolution test: evaluate Ours-Full with the input downsampled to 352/512 at test time before the model; optionally train a 512-px variant.
+
+### Same session, later: resolution test + demo model picker
+- **Resolution test** (`scripts/resolution_test.py`, EXPLAINER §11):
+  - `Ours-Full-in352/512/768` and `Ours-Clean-in352` are the same trained weights fed a low-resolution view (`low_res_view`: PIL bilinear to N×N, as the baselines' preprocessing, then back up).
+  - The script evaluates them (resumable) and reports retention on local (noise, blur, JPEG, rain) vs global (brightness, contrast, fog) corruptions, with paired bootstrap CIs → `results/resolution_test_<dataset>.csv`.
+  - Already in the existing numbers: Ours-Full retention is 0.995 on global corruptions (SINet-V2 1.000) vs 0.938 on local ones (SINet-V2 0.968).
+- **Demo:**
+  - "Models to compare" picker: up to 6 of SINet-V2, PFNet, ZoomNet, SAM2-UNet, SAM-Adapter and every trained Ours variant (including Ours-Full-in352), loaded on first use and cached; frees unselected models on CUDA out-of-memory.
+  - Uploading a photo runs detection immediately.
+  - Each model keeps a fixed colour.
+  - Browser-tested with upload + ticking a model.
+- 100 tests pass.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python scripts/resolution_test.py                 # ~40 min on CHAMELEON (4 variants x 41 conditions)
+git add results/ ; git commit -m "resolution test CHAMELEON" ; git push
+```

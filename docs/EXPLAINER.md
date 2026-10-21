@@ -186,4 +186,19 @@ In total about 3.7 M of the 10.3 M parameters are trained (`count_params()`).
   - for test images, "Show ground truth" adds the true mask and each model's S-measure and MAE *on that image*.
 - **Benchmark results tab:** the clean results table, the robustness summary (while the benchmark is still running, `complete` says which groups are finished), progress per model, efficiency, and the latest training-log entry. All of it is read from `results/*.csv`, so the demo can never show a number the code didn't produce.
 
-Default models: SINet-V2 plus our best trained variant (Full, then Aug, then Clean). Other models can be added with `--models`. Without a GPU it runs on the CPU, more slowly.
+**Comparing models on your own photo:** drag a photo onto the input box, or click it to upload. Detection runs immediately. Tick up to six models in "Models to compare"; each one loads the first time it is ticked, which takes a few seconds (SAM-Adapter about 20 s). Every model keeps the same colour. Uploaded photos have no ground truth, so no scores are shown, only the masks and latencies. At start, SINet-V2 and our best *finished* variant are ticked; `--models` changes which ones. Without a GPU it runs on the CPU, more slowly.
+
+## 11. The resolution test (why is our model less robust?)
+
+**The observation (CHAMELEON):** Ours-Full holds up as well as the baselines under brightness, contrast and fog (retention 0.995), but drops more under noise, blur, JPEG and rain (0.938 vs SINet-V2's 0.968).
+
+**The hypothesis:** the baselines shrink every image to 352×352 before looking at it. Shrinking an image about 2.8× averages neighbouring pixels, which cancels much of the random noise, smooths JPEG blocks and rain streaks, and makes blur smaller. We feed 1024×1024, so our model sees the corruption at nearly full strength. Brightness, contrast and fog change every pixel in the same way, so shrinking doesn't weaken them, and that is exactly where we match the baselines.
+
+**The test, with no retraining:** we give our *trained* model a low-resolution view of each image. The image is shrunk to 352 (or 512, or 768) pixels with the same filter the baselines use, then enlarged back (`low_res_view` in `src/models/robust_adapter.py`; models `Ours-Full-in352` etc.). If the hypothesis is right:
+- retention on local corruptions rises;
+- retention on global corruptions hardly changes;
+- clean accuracy drops, because fine detail is lost.
+
+`scripts/resolution_test.py` runs it and prints a table with paired confidence intervals.
+
+**Why it matters for the paper:** if confirmed, input resolution is a hidden factor in corruption-robustness comparisons. A high-resolution model, such as ours or SAM-Adapter, is effectively tested on *stronger* corruptions than a 352-px model given the same corrupted image. That is a useful, honest analysis finding, and it suggests concrete fixes, such as training at 512 px or adding a learned low-pass/denoising step.

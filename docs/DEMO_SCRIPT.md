@@ -16,7 +16,7 @@
 | 8–20 s | Click a gallery image; tick *Show ground truth* | "Left: SINet-V2, a well-known specialist model. Right: our adapter on a frozen MobileSAM. White is the true object. Each model's latency on this laptop's 4 GB GPU is shown under it." |
 | 20–35 s | Corruption = *gaussian_blur (seen)*, severity 1 → 5 | "Real cameras blur, compress and add noise. As blur gets stronger, watch how each model's mask changes. Our model was trained with this kind of corruption." |
 | 35–48 s | Corruption = *motion_blur (UNSEEN)* or *fog (UNSEEN)*, severity 3–4 | "This corruption was **never** used in training. Testing on held-out corruptions shows whether robustness transfers, which is a key part of our protocol." |
-| 48–55 s | Upload or pick one of *my_photos* | "It also works on new photos, with no clicks or prompts needed." |
+| 48–55 s | Drag your own photo onto the input box; tick one or two more models (e.g. Ours-Clean, SAM2-UNet) | "It works on new photos with no clicks or prompts, and I can compare any of the models side by side." |
 | 55–60 s | *Benchmark results* tab | "Every number here is read from the benchmark's results files: clean accuracy, robustness retention, and speed on this GPU." |
 
 **Be honest if asked:**
