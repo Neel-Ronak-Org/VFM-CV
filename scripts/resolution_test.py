@@ -29,7 +29,7 @@ sys.path.insert(0, str(REPO))
 from src.corruptions import load_protocol  # noqa: E402
 
 TEST_MODELS = ["Ours-Full-in352", "Ours-Full-in512", "Ours-Full-in768", "Ours-Clean-in352"]
-REFERENCE = ["Ours-Full", "Ours-Clean", "SINet-V2", "SAM2-UNet", "ZoomNet", "PFNet"]
+REFERENCE = ["Ours-Full", "Ours-Full-512", "Ours-Clean", "SINet-V2", "SAM2-UNet", "ZoomNet", "PFNet"]
 # Local corruptions change pixels within a small neighbourhood, so downsampling weakens them;
 # global ones change every pixel the same way and survive downsampling unchanged.
 LOCAL = ["gaussian_noise", "gaussian_blur", "motion_blur", "jpeg_compression", "rain"]
@@ -66,7 +66,7 @@ def report(dataset: str) -> pd.DataFrame:
     groups = {"all": protocol["corruptions"], "local": LOCAL, "global": GLOBAL,
               "seen": protocol["seen"], "unseen": protocol["unseen"]}
     rows = []
-    for m in REFERENCE[:2] + TEST_MODELS + REFERENCE[2:]:
+    for m in REFERENCE[:3] + TEST_MODELS + REFERENCE[3:]:
         sub = bench[bench.model == m]
         clean = sub[sub.corruption == "clean"]
         if clean.empty:
@@ -91,7 +91,8 @@ def report(dataset: str) -> pd.DataFrame:
     for a, b, corrs, lbl in [("Ours-Full-in352", "Ours-Full", LOCAL, "local"),
                              ("Ours-Full-in352", "Ours-Full", GLOBAL, "global"),
                              ("Ours-Full-in352", "SINet-V2", protocol["corruptions"], "all"),
-                             ("Ours-Clean-in352", "Ours-Clean", LOCAL, "local")]:
+                             ("Ours-Clean-in352", "Ours-Clean", LOCAL, "local"),
+                             ("Ours-Full-512", "Ours-Full", protocol["corruptions"], "all")]:
         print(f"  [{lbl:6s}] {paired(a, b, dataset, corrs)}")
     print("\nHypothesis supported if: in352 raises ret_local clearly, ret_global barely moves, and Sm_clean drops "
           "(the resolution trade-off).")

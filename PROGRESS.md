@@ -457,3 +457,39 @@ git checkout main ; git pull
 python scripts/resolution_test.py                 # ~40 min on CHAMELEON (4 variants x 41 conditions)
 git add results/ ; git commit -m "resolution test CHAMELEON" ; git push
 ```
+
+---
+
+## Session 13 — 2026-10-21 (Claude, cloud container) — resolution test result
+
+### From the student
+`scripts/resolution_test.py` on CHAMELEON (4 variants × 41 conditions), pushed as `results/resolution_test_CHAMELEON.csv`.
+
+### Result (Ours-Full fed an N-px view; clean Sα / mCorr / retention / local / global / mCE)
+- 1024: 0.883 / 0.847 / 0.959 / 0.938 / 0.995 / 1.18
+- 768:  0.878 / 0.842 / 0.959 / 0.942 / 0.989 / 1.22
+- 512:  0.868 / 0.832 / 0.958 / 0.942 / 0.984 / 1.31
+- 352:  0.842 / 0.814 / 0.968 / 0.958 / 0.985 / 1.45
+- Ours-Clean at 352: local retention 0.910 → 0.940.
+- Reference, SINet-V2: 0.888 / 0.870 / 0.980 / 0.968 / 1.000 / 1.00.
+
+**Reading:**
+- **Partly supported.** At 352 px, local-corruption retention rises and closes about two thirds of the gap to SINet-V2.
+- **But absolute accuracy falls everywhere** (local −0.023, 95 % CI [−0.036, −0.010]; global −0.049). The model was trained at 1024 px, so a downsampled-then-upsampled input is itself a shift for it. Retention rises only because the clean score falls more.
+- **Methodological lesson:** report mCorr/mCE beside retention.
+- **Proper test:** train at low resolution.
+
+### Done
+- `configs/train/ours_full_512.yaml` and model `Ours-Full-512` (run `ours_full_512`). `resolution_test.py` includes it in the report once trained. EXPLAINER §11 has the result table.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python -m src.train --config configs/train/ours_full_512.yaml --profile 40       # check speed first
+python -m src.train --config configs/train/ours_full_512.yaml                    # expected much faster than 1024 (estimate)
+python -m src.evaluate --models Ours-Full-512 --datasets CHAMELEON --corruptions clean
+python -m src.evaluate --models Ours-Full-512 --datasets CHAMELEON --corruptions all
+python scripts/resolution_test.py --report-only
+git add results/ ; git commit -m "Ours-Full-512" ; git push
+```
+Then: our variants on COD10K, `python -m src.profile --models Ours-Full`, finish SAM-Adapter.
