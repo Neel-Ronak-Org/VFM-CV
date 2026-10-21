@@ -18,6 +18,11 @@ REGISTRY = {
     "Ours-Aug": "src.models.robust_adapter:OursAug",
     "Ours-Full": "src.models.robust_adapter:OursFull",
     "Ours-Full-15ep": "src.models.robust_adapter:OursFullEp15",
+    # Resolution test (same weights, input reduced to N x N first; scripts/resolution_test.py):
+    "Ours-Full-in352": "src.models.robust_adapter:OursFullIn352",
+    "Ours-Full-in512": "src.models.robust_adapter:OursFullIn512",
+    "Ours-Full-in768": "src.models.robust_adapter:OursFullIn768",
+    "Ours-Clean-in352": "src.models.robust_adapter:OursCleanIn352",
     # Analysis only -- uses the ground-truth box, NOT a fair competitor:
     "Oracle-Box-MobileSAM": "src.models.oracle_box_sam:OracleBoxMobileSAM",
 }

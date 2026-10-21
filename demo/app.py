@@ -1,13 +1,14 @@
 """Gradio demo: camouflaged object detection under image corruptions.
 
     python demo/app.py                       # SINet-V2 vs our best trained adapter, GPU if available
-    python demo/app.py --models SINet-V2 SAM2-UNet Ours-Full
+    python demo/app.py --models SINet-V2 SAM2-UNet Ours-Full   # which models are ticked at start
     python demo/app.py --device cpu          # no GPU (slower)
     python demo/app.py --share               # temporary public link (e.g. to show on another device)
 
-Tab "Detector": pick one of 12 test images (or upload / drop photos in demo/my_photos/), choose a
-corruption and severity (0 = clean), and compare the models side by side as coloured overlays with each
-model's latency. For test images, "Show ground truth" adds the GT and per-image S-measure / MAE.
+Tab "Detector": upload your own photo (drag & drop) or pick one of 12 test images / demo/my_photos/,
+tick up to 6 models to compare (baselines and every trained Ours variant; each loads on first use),
+choose a corruption and severity (0 = clean), and compare the models side by side as coloured overlays
+with each model's latency. For test images, "Show ground truth" adds the GT and per-image S-measure / MAE.
 Tab "Benchmark results": tables read from results/*.csv when the app starts (or on Refresh); nothing typed in.
 
 Test images are read from your local data/raw (datasets are never bundled or redistributed). To choose
@@ -39,7 +40,8 @@ MY_PHOTOS = DEMO / "my_photos"
 EXAMPLES_FILE = DEMO / "examples.txt"
 GALLERY_PICK = {"COD10K": 6, "CAMO": 3, "CHAMELEON": 3}  # 12 images, chosen with a fixed seed
 MAX_SIDE = 1600  # larger uploads are downscaled (phone photos) to keep corruption + inference fast
-COLORS = [(255, 64, 64), (64, 200, 255), (80, 255, 80), (255, 200, 0), (220, 80, 255)]
+COLORS = [(255, 64, 64), (255, 140, 0), (255, 220, 0), (160, 120, 255), (255, 80, 200),
+          (64, 200, 255), (0, 160, 255), (80, 255, 80), (0, 200, 140), (180, 255, 0)]  # one per PICKABLE model
 GT_COLOR = (255, 255, 255)
 OURS_PREFERENCE = ["Ours-Full", "Ours-Full-15ep", "Ours-Aug", "Ours-Clean"]
 
@@ -107,44 +109,89 @@ def overlay(img: np.ndarray, prob: np.ndarray, color) -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------------------- models
-def pick_ours(dev: str):
-    """The first FINISHED variant in OURS_PREFERENCE (so a run still training never replaces a finished
-    model); if none is finished, the first one that loads (labelled "...-unfinished")."""
-    import warnings
+PICKABLE = ["SINet-V2", "PFNet", "ZoomNet", "SAM2-UNet", "SAM-Adapter",
+            "Ours-Clean", "Ours-Aug", "Ours-Full", "Ours-Full-15ep", "Ours-Full-in352"]
+SLOW = {"SAM-Adapter": "~2.5 s/image, 2.5 GB GPU"}
+MAX_SLOTS = 6  # side-by-side outputs shown at once
 
-    fallback = None
-    for name in OURS_PREFERENCE:
+
+def _ours_run(name: str) -> str | None:
+    from src.models.robust_adapter import OursClean, OursAug, OursFull, OursFullEp15, OursFullIn352
+    runs = {c.name: c.run for c in (OursClean, OursAug, OursFull, OursFullEp15, OursFullIn352)}
+    return runs.get(name)
+
+
+def ours_status(name: str) -> str:
+    """'finished' / 'unfinished' / 'missing' for an Ours variant, from its checkpoint files (nothing loaded)."""
+    from src.models.robust_adapter import OURS_DIR
+    d = OURS_DIR / str(_ours_run(name))
+    return "finished" if (d / "final.pt").exists() else "unfinished" if (d / "last.pt").exists() else "missing"
+
+
+def pick_ours() -> str | None:
+    """The first FINISHED variant in OURS_PREFERENCE (so a run still training never replaces a finished
+    model); if none is finished, the first one that exists (it is labelled "...-unfinished")."""
+    status = {n: ours_status(n) for n in OURS_PREFERENCE}
+    return (next((n for n in OURS_PREFERENCE if status[n] == "finished"), None)
+            or next((n for n in OURS_PREFERENCE if status[n] == "unfinished"), None))
+
+
+def pickable() -> list[str]:
+    """Models offered in the picker: all baselines, plus the Ours variants that have a checkpoint."""
+    return [n for n in PICKABLE if _ours_run(n) is None or ours_status(n) != "missing"]
+
+
+def default_selection(names: list[str] | None) -> list[str]:
+    if names:
+        return names
+    ours = pick_ours()
+    return ["SINet-V2"] + ([ours] if ours else [])
+
+
+class ModelPool:
+    """Loads models the first time they are selected (and warms them up), then keeps them.
+    A model that fails to load is remembered as an error string shown in its column."""
+
+    def __init__(self, device: str | None):
+        self.device = str(pick_device(device))
+        self.models: dict = {}
+
+    def get(self, name: str):
+        if name not in self.models:
+            try:
+                m = build_model(name, device=self.device)
+                warmup({name: m})
+                self.models[name] = m
+            except Exception as e:  # show the reason in the UI instead of crashing the demo
+                self.models[name] = f"unavailable: {type(e).__name__}: {e}"
+        return self.models[name]
+
+    def subset(self, names: list[str]) -> dict:
+        """name -> model (or error), loading as needed. On a CUDA out-of-memory error, models that are not
+        selected are released and loading is retried once."""
+        out = {}
+        for n in names:
+            m = self.get(n)
+            if isinstance(m, str) and "out of memory" in m.lower():
+                self.release(keep=names)
+                del self.models[n]
+                m = self.get(n)
+            out[n] = m
+        return out
+
+    def release(self, keep: list[str]) -> None:
+        for n in [n for n in self.models if n not in keep]:
+            del self.models[n]
         try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                m = build_model(name, device=dev)
-        except FileNotFoundError:
-            continue
-        if m.finished:
-            return m
-        fallback = fallback or m
-    return fallback
+            import torch
+            torch.cuda.empty_cache()
+        except Exception:
+            pass
 
 
 def load_models(names: list[str] | None, device: str | None) -> dict:
-    """name -> model or error string. Without --models: SINet-V2 + the best trained variant of ours."""
-    dev = str(pick_device(device))
-    models: dict = {}
-    if names is None:
-        names = ["SINet-V2"]
-        pick = pick_ours(dev)
-        if pick:
-            models[pick.name] = pick
-        else:
-            models["Ours-Full"] = "not trained yet: python -m src.train --config configs/train/ours_full.yaml"
-    for n in names:
-        try:
-            models[n] = build_model(n, device=dev)
-        except Exception as e:  # show the reason in the UI instead of crashing the demo
-            models[n] = f"unavailable: {type(e).__name__}: {e}"
-    # keep SINet-V2 first, then ours, as the brief's layout
-    order = [n for n in names if n in models] + [n for n in models if n not in names]
-    return {n: models[n] for n in dict.fromkeys(order)}
+    """name -> model or error string, for the default selection (used by main() for a start-up check)."""
+    return ModelPool(device).subset(default_selection(names))
 
 
 def warmup(models: dict) -> None:
@@ -185,7 +232,8 @@ def detect(img, corruption: str, severity: int, gt, models: dict, show_gt: bool 
             g = gt if gt.shape == prob.shape else cv2.resize(gt.astype(np.uint8), prob.shape[::-1], interpolation=cv2.INTER_NEAREST) > 0
             sc = image_scores(prob, g)
             text += f" · S-measure {sc['Sm']:.3f} · MAE {sc['MAE']:.3f} (this image)"
-        results.append((name, overlay(corrupted, prob, COLORS[i % len(COLORS)]), text))
+        k = PICKABLE.index(name) if name in PICKABLE else i  # a model keeps its colour whatever else is shown
+        results.append((name, overlay(corrupted, prob, COLORS[k % len(COLORS)]), text))
     gt_img = overlay(corrupted, gt.astype(np.float32), GT_COLOR) if gt is not None and show_gt else None
     return corrupted, results, gt_img
 
@@ -237,7 +285,7 @@ def results_tables() -> dict[str, pd.DataFrame]:
 
 
 # ---------------------------------------------------------------------------------------- UI
-def build_app(models: dict, examples: list[dict], device_label: str):
+def build_app(pool: "ModelPool", examples: list[dict], device_label: str, selected: list[str]):
     protocol = load_protocol()
     choices = corruption_choices(protocol)
     gallery_items = lambda ex: [(thumbnail(e["image"]), e["label"]) for e in ex]  # noqa: E731
@@ -250,17 +298,23 @@ def build_app(models: dict, examples: list[dict], device_label: str):
         ex = examples + my_photos()
         return gr.update(value=gallery_items(ex)), ex
 
-    def run(img, corr_label, severity, show_gt, gt_path):
-        n = len(models)
+    def run(img, corr_label, severity, show_gt, gt_path, chosen):
+        chosen = [n for n in PICKABLE if n in (chosen or [])] + [n for n in (chosen or []) if n not in PICKABLE]
+        note = f"Showing the first {MAX_SLOTS} selected models." if len(chosen) > MAX_SLOTS else ""
+        chosen = chosen[:MAX_SLOTS]
         if img is None:
-            return [None] + [None, ""] * n + [gr.update(value=None, visible=False)]
+            return [None, note] + [gr.update(visible=False)] * (2 * MAX_SLOTS) + [gr.update(value=None, visible=False)]
         gt = read_mask(gt_path) if gt_path else None
         if gt is not None and gt.shape != img.shape[:2]:
             gt = cv2.resize(gt.astype(np.uint8), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST) > 0
-        corrupted, results, gt_img = detect(img, choices[corr_label], int(severity), gt, models, show_gt)
-        out = [corrupted]
-        for _, ov, text in results:
-            out += [ov, text]
+        corrupted, results, gt_img = detect(img, choices[corr_label], int(severity), gt, pool.subset(chosen), show_gt)
+        out = [corrupted, note]
+        for i in range(MAX_SLOTS):
+            if i < len(results):
+                name, ov, text = results[i]
+                out += [gr.update(value=ov, label=name, visible=True), gr.update(value=text, visible=True)]
+            else:
+                out += [gr.update(value=None, visible=False), gr.update(value="", visible=False)]
         return out + [gr.update(value=gt_img, visible=gt_img is not None)]
 
     with gr.Blocks(title="Robust camouflage detection") as app:
@@ -272,7 +326,13 @@ def build_app(models: dict, examples: list[dict], device_label: str):
         with gr.Tab("Detector"):
             with gr.Row():
                 with gr.Column(scale=1):
-                    image = gr.Image(type="numpy", label="Input image (upload or pick below)", sources=["upload", "clipboard"])
+                    image = gr.Image(type="numpy", label="Your photo: drag & drop / click to upload (or pick a test image)",
+                                     sources=["upload", "clipboard"])
+                    model_pick = gr.CheckboxGroup(
+                        pickable(), value=[n for n in selected if n in pickable()] or selected,
+                        label=f"Models to compare (up to {MAX_SLOTS}; loaded on first use)",
+                        info="; ".join(f"{k}: {v}" for k, v in SLOW.items()) + ". Ours-Full-in352 = Ours-Full fed a "
+                             "352-px view (resolution test).")
                     corruption = gr.Dropdown(list(choices), value="none (clean)", label="Corruption")
                     severity = gr.Slider(0, 5, value=0, step=1, label="Severity (0 = clean)")
                     show_gt = gr.Checkbox(False, label="Show ground truth (test images only)")
@@ -282,15 +342,18 @@ def build_app(models: dict, examples: list[dict], device_label: str):
                     gallery = gr.Gallery(gallery_items(examples + my_photos()), label="Test images + demo/my_photos",
                                          columns=6, height=260, allow_preview=False)
                     refresh = gr.Button("Reload demo/my_photos", size="sm")
+            slot_note = gr.Markdown("")
             with gr.Row():
-                corrupted_out = gr.Image(label="Corrupted input", interactive=False)
-                model_outs = []
-                for name in models:
-                    with gr.Column():
-                        ov = gr.Image(label=name, interactive=False)
-                        txt = gr.Markdown("")
-                        model_outs += [ov, txt]
+                corrupted_out = gr.Image(label="Input (with corruption)", interactive=False)
                 gt_out = gr.Image(label="Ground truth", interactive=False, visible=False)
+            model_outs = []
+            for r in range(0, MAX_SLOTS, 3):
+                with gr.Row():
+                    for i in range(r, min(r + 3, MAX_SLOTS)):
+                        with gr.Column():
+                            ov = gr.Image(label=f"model {i + 1}", interactive=False, visible=False)
+                            txt = gr.Markdown("", visible=False)
+                            model_outs += [ov, txt]
         with gr.Tab("Benchmark results"):
             gr.Markdown("Read from `results/*.csv` (the benchmark may still be running: see `complete` and "
                         "`n_conditions`). Retention = mean score under corruption / clean score.")
@@ -306,10 +369,11 @@ def build_app(models: dict, examples: list[dict], device_label: str):
             t = results_tables()
             return [t.get(k, pd.DataFrame({"status": ["no results yet"]})) for k in tbl]
 
-        inputs = [image, corruption, severity, show_gt, gt_state]
-        outputs = [corrupted_out] + model_outs + [gt_out]
+        inputs = [image, corruption, severity, show_gt, gt_state, model_pick]
+        outputs = [corrupted_out, slot_note] + model_outs + [gt_out]
         gallery.select(on_select, [ex_state], [image, gt_state, picked]).then(run, inputs, outputs)
-        image.upload(lambda: (None, "Uploaded image (no ground truth)"), None, [gt_state, picked])
+        image.upload(lambda: (None, "Uploaded image (no ground truth)"), None, [gt_state, picked]).then(run, inputs, outputs)
+        model_pick.change(run, inputs, outputs)
         image.clear(lambda: (None, ""), None, [gt_state, picked])
         run_btn.click(run, inputs, outputs)
         corruption.change(run, inputs, outputs)
@@ -323,7 +387,9 @@ def build_app(models: dict, examples: list[dict], device_label: str):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--models", nargs="+", default=None, help="default: SINet-V2 + best trained Ours variant")
+    ap.add_argument("--models", nargs="+", default=None,
+                    help="models ticked at start (default: SINet-V2 + best finished Ours variant); "
+                         "any model can be ticked later in the page")
     ap.add_argument("--device", default=None, help="cuda or cpu (default: cuda if available)")
     ap.add_argument("--share", action="store_true")
     ap.add_argument("--port", type=int, default=7860)
@@ -331,16 +397,17 @@ def main():
 
     dev = pick_device(args.device)
     t0 = time.time()
-    models = load_models(args.models, args.device)
-    for n, m in models.items():
+    pool = ModelPool(args.device)
+    selected = default_selection(args.models)
+    for n, m in pool.subset(selected).items():  # load + warm up the default models now; others on first use
         print(f"  {n}: {m if isinstance(m, str) else 'loaded'}")
-    warmup(models)
+    print(f"  also selectable: {', '.join(n for n in pickable() if n not in selected)}")
     examples = pick_examples()
     if not examples:
         print("No local test images found (data/raw); upload photos or add them to demo/my_photos/.")
     label = "CPU" if dev.type == "cpu" else __import__("torch").cuda.get_device_name(0)
     print(f"ready in {time.time() - t0:.0f} s")
-    build_app(models, examples, label).launch(share=args.share, server_port=args.port, inbrowser=True)
+    build_app(pool, examples, label, selected).launch(share=args.share, server_port=args.port, inbrowser=True)
 
 
 if __name__ == "__main__":

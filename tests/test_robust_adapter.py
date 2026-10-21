@@ -235,3 +235,21 @@ def test_profile_writes_row_and_no_checkpoint(train_root, tmp_path):
                 ckpt_root=tmp_path / "ck", log_root=tmp_path / "logs")
     assert "epoch_minutes" in row and (tmp_path / "logs/profile.csv").exists()
     assert not (tmp_path / "ck").exists()
+
+
+def test_low_res_view_removes_fine_noise_keeps_shape():
+    from src.models.robust_adapter import low_res_view
+    rng = np.random.default_rng(0)
+    flat = np.full((700, 900, 3), 128, np.uint8)
+    noisy = np.clip(flat + rng.normal(0, 30, flat.shape), 0, 255).astype(np.uint8)
+    out = low_res_view(noisy, 352)
+    assert out.shape == noisy.shape and out.dtype == np.uint8
+    assert out.astype(float).std() < 0.6 * noisy.astype(float).std()  # downsampling averages the noise away
+
+
+def test_resolution_test_models_registered():
+    from src.models import REGISTRY
+    from src.models.robust_adapter import OursFullIn352, OursCleanIn352
+    assert OursFullIn352.run == "ours_full" and OursFullIn352.input_res == 352
+    assert OursCleanIn352.run == "ours_clean"
+    assert {"Ours-Full-in352", "Ours-Full-in512", "Ours-Full-in768", "Ours-Clean-in352"} <= set(REGISTRY)

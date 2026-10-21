@@ -395,3 +395,65 @@ python -m src.train --config configs/train/ours_clean.yaml
 python -m src.train --config configs/train/ours_aug.yaml
 git add results/ ; git commit -m "Ours training" ; git push
 ```
+
+---
+
+## Session 11 — 2026-10-21 (Claude, cloud container) — first results for our adapter (CHAMELEON)
+
+### From the student (laptop)
+- Trained, all 30 epochs, peak 1.4 GB (Full) / 0.74 GB (Clean, Aug):
+  - Ours-Full: 8.48 h
+  - Ours-Clean: 4.11 h
+  - Ours-Aug: 4.30 h
+  - Ours-Full-15ep: 4.05 h (kept for the epochs ablation)
+- Evaluated on CHAMELEON, clean + 8 corruptions × 5 severities.
+
+### Results (CHAMELEON, n = 76; from results/benchmark.csv and per-image files)
+
+| Model | Clean Sα | mCorr Sα | Retention | mCE (vs SINet-V2) |
+|---|---|---|---|---|
+| SAM2-UNet | 0.914 | 0.896 | 0.980 | 0.81 |
+| SINet-V2 | 0.888 | 0.870 | 0.980 | 1.00 |
+| ZoomNet | 0.902 | 0.867 | 0.961 | 1.03 |
+| PFNet | 0.882 | 0.849 | 0.963 | 1.17 |
+| Ours-Clean | 0.885 | 0.832 | 0.939 | 1.30 |
+| Ours-Aug | 0.876 | 0.839 | 0.957 | 1.24 |
+| Ours-Full (30 ep) | 0.883 | 0.847 | 0.959 | 1.18 |
+
+Paired bootstrap on per-image mean Sα under corruption:
+- **Full vs Clean:** +0.015 [+0.006, +0.024]. Seen corruptions +0.024 [+0.014, +0.034]; **unseen +0.007 [−0.002, +0.016], not significant**.
+- **Full vs Aug:** +0.008 [+0.001, +0.016].
+- **30 vs 15 epochs:** +0.020 [+0.010, +0.031].
+- **Full vs SINet-V2:** −0.024 [−0.038, −0.010].
+- **Full vs SAM2-UNet:** −0.049 [−0.066, −0.033].
+
+**Reading (negative result, reported honestly):**
+- Our robustness training helps our own model on the seen corruptions.
+- The held-out (unseen) gain is not significant yet on CHAMELEON.
+- Our model is less robust than the 352-px specialists and SAM2-UNet.
+- Our gap is almost entirely on *local, high-frequency* corruptions: noise, blur, JPEG, rain. Brightness, contrast and fog are on par.
+
+**Hypothesis:** input resolution. The baselines resize ~744×981 images down to 352 px, which averages away noise and shrinks blur. We feed 1024 px, so the model sees the corruption at full strength. SAM-Adapter, also 1024 px, has the lowest retention on COD10K (partial results), which fits. This needs a controlled test.
+
+### Next
+- After the demo: evaluate Ours-Clean, Ours-Aug and Ours-Full on COD10K (the main table; n = 2026 is far more reliable than 76).
+- Resolution test: evaluate Ours-Full with the input downsampled to 352/512 at test time before the model; optionally train a 512-px variant.
+
+### Same session, later: resolution test + demo model picker
+- **Resolution test** (`scripts/resolution_test.py`, EXPLAINER §11):
+  - `Ours-Full-in352/512/768` and `Ours-Clean-in352` are the same trained weights fed a low-resolution view (`low_res_view`: PIL bilinear to N×N, as the baselines' preprocessing, then back up).
+  - The script evaluates them (resumable) and reports retention on local (noise, blur, JPEG, rain) vs global (brightness, contrast, fog) corruptions, with paired bootstrap CIs → `results/resolution_test_<dataset>.csv`.
+  - Already in the existing numbers: Ours-Full retention is 0.995 on global corruptions (SINet-V2 1.000) vs 0.938 on local ones (SINet-V2 0.968).
+- **Demo:**
+  - "Models to compare" picker: up to 6 of SINet-V2, PFNet, ZoomNet, SAM2-UNet, SAM-Adapter and every trained Ours variant (including Ours-Full-in352), loaded on first use and cached; frees unselected models on CUDA out-of-memory.
+  - Uploading a photo runs detection immediately.
+  - Each model keeps a fixed colour.
+  - Browser-tested with upload + ticking a model.
+- 100 tests pass.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python scripts/resolution_test.py                 # ~40 min on CHAMELEON (4 variants x 41 conditions)
+git add results/ ; git commit -m "resolution test CHAMELEON" ; git push
+```
