@@ -320,6 +320,11 @@ class OursFullEp15(RobustAdapterCOD):
     name, run = "Ours-Full-15ep", "ours_full_ep15"
 
 
+class OursFull512(RobustAdapterCOD):
+    """Ours-Full trained and tested at 512 x 512 (configs/train/ours_full_512.yaml); resolution follow-up."""
+    name, run = "Ours-Full-512", "ours_full_512"
+
+
 # --- Resolution test (diagnostic, not new models): the same trained weights, fed a low-resolution view ---
 class OursFullIn352(OursFull):
     name, input_res = "Ours-Full-in352", 352

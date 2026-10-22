@@ -457,3 +457,80 @@ git checkout main ; git pull
 python scripts/resolution_test.py                 # ~40 min on CHAMELEON (4 variants x 41 conditions)
 git add results/ ; git commit -m "resolution test CHAMELEON" ; git push
 ```
+
+---
+
+## Session 13 — 2026-10-21 (Claude, cloud container) — resolution test result
+
+### From the student
+`scripts/resolution_test.py` on CHAMELEON (4 variants × 41 conditions), pushed as `results/resolution_test_CHAMELEON.csv`.
+
+### Result (Ours-Full fed an N-px view; clean Sα / mCorr / retention / local / global / mCE)
+- 1024: 0.883 / 0.847 / 0.959 / 0.938 / 0.995 / 1.18
+- 768:  0.878 / 0.842 / 0.959 / 0.942 / 0.989 / 1.22
+- 512:  0.868 / 0.832 / 0.958 / 0.942 / 0.984 / 1.31
+- 352:  0.842 / 0.814 / 0.968 / 0.958 / 0.985 / 1.45
+- Ours-Clean at 352: local retention 0.910 → 0.940.
+- Reference, SINet-V2: 0.888 / 0.870 / 0.980 / 0.968 / 1.000 / 1.00.
+
+**Reading:**
+- **Partly supported.** At 352 px, local-corruption retention rises and closes about two thirds of the gap to SINet-V2.
+- **But absolute accuracy falls everywhere** (local −0.023, 95 % CI [−0.036, −0.010]; global −0.049). The model was trained at 1024 px, so a downsampled-then-upsampled input is itself a shift for it. Retention rises only because the clean score falls more.
+- **Methodological lesson:** report mCorr/mCE beside retention.
+- **Proper test:** train at low resolution.
+
+### Done
+- `configs/train/ours_full_512.yaml` and model `Ours-Full-512` (run `ours_full_512`). `resolution_test.py` includes it in the report once trained. EXPLAINER §11 has the result table.
+
+### Next (student)
+```powershell
+git checkout main ; git pull
+python -m src.train --config configs/train/ours_full_512.yaml --profile 40       # check speed first
+python -m src.train --config configs/train/ours_full_512.yaml                    # expected much faster than 1024 (estimate)
+python -m src.evaluate --models Ours-Full-512 --datasets CHAMELEON --corruptions clean
+python -m src.evaluate --models Ours-Full-512 --datasets CHAMELEON --corruptions all
+python scripts/resolution_test.py --report-only
+git add results/ ; git commit -m "Ours-Full-512" ; git push
+```
+Then: our variants on COD10K, `python -m src.profile --models Ours-Full`, finish SAM-Adapter.
+
+---
+
+## Session 14 — 2026-10-22 (Claude, cloud container) — COD10K results for our adapter: it beats the specialists
+
+### From the student
+- Ours-Clean, Ours-Aug and Ours-Full evaluated on COD10K (41 conditions × 2,026 images).
+- `src.profile` run for Ours-Full: 10.33 M params, 83.2 GFLOPs, **45.6 ms (21.9 FPS)**, peak **181 MB**, fp16.
+
+### Results (COD10K; Sα)
+
+| Model | Clean | mCorr | Retention | mCE |
+|---|---|---|---|---|
+| SAM2-UNet | 0.880 | 0.866 | 0.984 | 0.66 |
+| SAM-Adapter (23/40) | 0.884 | 0.849 | 0.960 | — |
+| **Ours-Full** | **0.840** | **0.812** | 0.967 | **0.92** |
+| Ours-Aug | 0.838 | 0.810 | 0.966 | 0.93 |
+| ZoomNet | 0.839 | 0.803 | 0.957 | 0.96 |
+| Ours-Clean | 0.842 | 0.799 | 0.948 | 0.98 |
+| SINet-V2 | 0.815 | 0.795 | 0.976 | 1.00 |
+| PFNet | 0.800 | 0.773 | 0.967 | 1.11 |
+
+**Paired bootstrap on COD10K (mean Sα over the 40 corrupted conditions, 95 % CI):**
+- Ours-Full beats every specialist:
+    - SINet-V2: +0.017 [+0.013, +0.021]
+    - ZoomNet: +0.009 [+0.005, +0.014]
+    - PFNet: +0.039 [+0.035, +0.043]
+- Ours-Full vs SAM2-UNet: −0.054 [−0.058, −0.050].
+- **Robustness training transfers to unseen corruptions** (Ours-Full − Ours-Clean):
+    - seen +0.021 [+0.019, +0.023]
+    - **unseen +0.005 [+0.003, +0.007]**: motion blur +0.008, **rain +0.015** (a family never seen in training); contrast and fog ±0.001 (not significant; already at ceiling).
+- Ours-Aug − Ours-Clean, unseen: +0.004 [+0.002, +0.005]. Ours-Full − Ours-Aug: all +0.002 [+0.001, +0.004]; unseen +0.0015 [+0.0001, +0.0030]. The consistency loss adds a little.
+
+**Reading:**
+- On the main test set, Ours-Full is the most accurate and most robust model below SAM2-UNet and SAM-Adapter.
+- It is on the speed/accuracy Pareto front: SINet-V2 (28.6 ms) → Ours-Full (45.6 ms) → SAM2-UNet (71.3 ms). It dominates ZoomNet (2.1× faster, 3× fewer parameters, 2.3× less memory, more accurate under corruption) and PFNet.
+- CHAMELEON (76 images) had ranked SINet-V2 above us. COD10K (2,026 images) is the decisive set, and SAM-based models gain most on it.
+- Retention alone still ranks us below SINet-V2 (0.967 vs 0.976) despite a higher absolute score. Report mCorr/mCE.
+
+### Next
+- Ours-Full-512 (PR #18), CAMO and NC4K for our variants, finish SAM-Adapter, then tables, figures and the paper.

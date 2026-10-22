@@ -202,3 +202,20 @@ In total about 3.7 M of the 10.3 M parameters are trained (`count_params()`).
 `scripts/resolution_test.py` runs it and prints a table with paired confidence intervals.
 
 **Why it matters for the paper:** if confirmed, input resolution is a hidden factor in corruption-robustness comparisons. A high-resolution model, such as ours or SAM-Adapter, is effectively tested on *stronger* corruptions than a 352-px model given the same corrupted image. That is a useful, honest analysis finding, and it suggests concrete fixes, such as training at 512 px or adding a learned low-pass/denoising step.
+
+**Result (CHAMELEON, 21 Oct 2026; `results/resolution_test_CHAMELEON.csv`):**
+
+| Input view | Clean Sα | Under corruption | Retention | Local | Global | mCE |
+|---|---|---|---|---|---|---|
+| 1024 (normal) | 0.883 | 0.847 | 0.959 | 0.938 | 0.995 | 1.18 |
+| 768 | 0.878 | 0.842 | 0.959 | 0.942 | 0.989 | 1.22 |
+| 512 | 0.868 | 0.832 | 0.958 | 0.942 | 0.984 | 1.31 |
+| 352 | 0.842 | 0.814 | 0.968 | 0.958 | 0.985 | 1.45 |
+| SINet-V2 (352, for reference) | 0.888 | 0.870 | 0.980 | 0.968 | 1.000 | 1.00 |
+
+**What it means, half yes and half no:**
+- **Yes:** at 352 px the retention on local corruptions rises from 0.938 to 0.958, so two thirds of the gap to SINet-V2 (0.968) disappears. Resolution does change how strong a corruption effectively is. The same happens for Ours-Clean (0.910 to 0.940).
+- **No free lunch:** the absolute score drops for *every* corruption and for clean images (clean 0.883 to 0.842; local corruptions −0.023, CI [−0.036, −0.010]). Retention rises only because the clean score falls further than the corrupted one.
+- **Why:** our model was trained at 1024 px and relies on fine detail. A shrunk-then-enlarged image looks blurred to it, which is itself a distribution shift. So this test cannot say what a model *trained* at low resolution would do.
+- **Lesson for the paper:** retention alone can mislead. A model that is worse everywhere can have higher retention. Always report mCorr or mCE beside it.
+- **Next:** train at 512 px (`configs/train/ours_full_512.yaml`, model `Ours-Full-512`) to see whether a model *trained* on low-resolution input keeps its accuracy and gains robustness.

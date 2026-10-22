@@ -1,0 +1,6 @@
+# Resolution follow-up: Ours-Full trained (and tested) at 512 px instead of 1024 (VRAM-ladder step 3).
+# Tests whether a model TRAINED on low-resolution input keeps its accuracy while gaining robustness;
+# the test-time-only resolution test (scripts/resolution_test.py) lost clean accuracy.
+base: ours_full.yaml
+data:
+  img_size: 512
