@@ -1,0 +1,36 @@
+{
+  "git": "a02d790-dirty",
+  "host": "LAPTOP-9RT095IQ",
+  "python": "3.11.17",
+  "args": {
+    "models": [
+      "Ours-Clean",
+      "Ours-Aug",
+      "Ours-Full"
+    ],
+    "datasets": [
+      "CAMO",
+      "NC4K"
+    ],
+    "corruptions": [
+      "clean"
+    ],
+    "severities": null,
+    "out": "results/benchmark.csv",
+    "data_root": null,
+    "device": null,
+    "precision": "auto",
+    "limit": null,
+    "save_pred": 0,
+    "workers": 2,
+    "max_hours": null
+  },
+  "conditions": [
+    [
+      "clean",
+      0
+    ]
+  ],
+  "out": "C:\\Users\\Ronak Daniel\\VFM-CV\\results\\benchmark.csv",
+  "seconds": 798.6
+}
