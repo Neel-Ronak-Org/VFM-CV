@@ -575,3 +575,37 @@ Then: our variants on COD10K, `python -m src.profile --models Ours-Full`, finish
 ### Next
 - Block B (NC4K corrupted, Ours-Full) is running.
 - Optional: Ours-Full-512 on CAMO/NC4K. Then SAM-Adapter, then the table/figure scripts and the paper.
+
+---
+
+## Session 16 — 2026-10-23 (Claude, cloud container) — NC4K under corruption; experiments nearly complete
+
+### From the student (Block B)
+Ours-Full on NC4K, 40 corrupted conditions × 4,121 images.
+
+### Result (NC4K, Sα)
+
+| Model | Clean | mCorr | Retention | mCE |
+|---|---|---|---|---|
+| SAM2-UNet | 0.901 | 0.887 | 0.985 | 0.65 |
+| **Ours-Full** | **0.859** | **0.836** | 0.973 | **0.95** |
+| SINet-V2 | 0.847 | 0.826 | 0.975 | 1.00 |
+| ZoomNet | 0.853 | 0.822 | 0.964 | 1.02 |
+| PFNet | 0.829 | 0.801 | 0.967 | 1.15 |
+
+**Paired bootstrap, corrupted, n = 4,121:**
+- vs SINet-V2: +0.009 [+0.007, +0.012]
+- vs ZoomNet: +0.014 [+0.011, +0.016]
+- vs PFNet: +0.035 [+0.032, +0.037]
+- vs SAM2-UNet: −0.052 [−0.054, −0.049]
+
+**So, under corruption, Ours-Full beats every specialist significantly on the two large test sets (COD10K, NC4K).** It ties SINet-V2 on CAMO and trails it on CHAMELEON (the two small sets, 250 and 76 images).
+
+### Status
+- Our models: complete for the paper's main tables.
+- Missing: SAM-Adapter corrupted conditions (COD10K 24/40, CAMO and CHAMELEON 0/40; about 31 h).
+- Optional extras: ablations, NC4K for Clean/Aug, 512 px on CAMO/NC4K, seeds.
+
+### Next
+- Student: SAM-Adapter sessions (`python scripts/run_benchmark.py --max-hours 10`).
+- Claude: Phase 7, `scripts/make_tables.py` + `scripts/make_figures.py`, which read only `results/*.csv`.
