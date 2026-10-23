@@ -219,3 +219,16 @@ In total about 3.7 M of the 10.3 M parameters are trained (`count_params()`).
 - **Why:** our model was trained at 1024 px and relies on fine detail. A shrunk-then-enlarged image looks blurred to it, which is itself a distribution shift. So this test cannot say what a model *trained* at low resolution would do.
 - **Lesson for the paper:** retention alone can mislead. A model that is worse everywhere can have higher retention. Always report mCorr or mCE beside it.
 - **Next:** train at 512 px (`configs/train/ours_full_512.yaml`, model `Ours-Full-512`) to see whether a model *trained* on low-resolution input keeps its accuracy and gains robustness.
+
+**Follow-up: training at 512 px (`Ours-Full-512`, COD10K, 23 Oct).** This settles the question.
+
+| Model | Clean Sα | Under corruption | Retention | Local | Global | Speed |
+|---|---|---|---|---|---|---|
+| Ours-Full, 1024 px | 0.840 | 0.812 | 0.967 | 0.949 | 0.996 | 45.6 ms |
+| Ours-Full-512, trained at 512 | 0.824 | 0.805 | 0.976 | 0.967 | 0.992 | 23.1 ms |
+| SINet-V2, 352 px | 0.815 | 0.795 | 0.976 | 0.963 | 0.997 | 28.6 ms |
+
+- Trained at 512 px, the model scores **exactly the same as the 1024-px model under noise, blur, JPEG and rain** (difference −0.000, CI [−0.003, +0.003]). It loses 0.016 on clean images and on global corruptions. Retention therefore rises to SINet-V2's level.
+- **Why this differs from the test-time version:** a model trained at 512 px learned to work with less detail. The 1024-px model fed a shrunk image never learned that, so it lost accuracy everywhere.
+- **What to say:** "Input resolution trades clean accuracy for robustness. Training at 512 px keeps every bit of performance under local corruptions, costs 0.016 Sα on clean images, and halves inference time."
+- Bonus: Ours-Full-512 beats SINet-V2 on COD10K in clean accuracy, accuracy under corruption, speed, memory and size, with equal retention.

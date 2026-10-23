@@ -534,3 +534,44 @@ Then: our variants on COD10K, `python -m src.profile --models Ours-Full`, finish
 
 ### Next
 - Ours-Full-512 (PR #18), CAMO and NC4K for our variants, finish SAM-Adapter, then tables, figures and the paper.
+
+---
+
+## Session 15 — 2026-10-23 (Claude, cloud container) — 512-px model, CAMO, NC4K clean
+
+### From the student (Block A done; Block B, Ours-Full NC4K corrupted, running)
+- **Ours-Full-512 trained:** 30 epochs, **2.58 h**, 0.152 s/batch, peak 392 MB.
+- Profile: **23.1 ms (43 FPS), 22.1 GFLOPs, 87 MB peak**. SINet-V2: 28.6 ms, 24.3 GFLOPs, 134 MB.
+- Evaluated on CHAMELEON and COD10K (41 conditions each). Ours-Clean, Ours-Aug and Ours-Full also on CAMO (41) and NC4K (clean).
+
+### COD10K (Sα)
+
+| Model | Params | ms | Clean | mCorr | Retention | Local ret. | Global ret. | mCE |
+|---|---|---|---|---|---|---|---|---|
+| Ours-Full (1024) | 10.3 M | 45.6 | 0.840 | 0.812 | 0.967 | 0.949 | 0.996 | 0.92 |
+| **Ours-Full-512** | 10.3 M | **23.1** | 0.824 | 0.805 | **0.976** | **0.967** | 0.992 | 0.95 |
+| ZoomNet | 32.4 M | 94.4 | 0.839 | 0.803 | 0.957 | 0.943 | 0.981 | 0.96 |
+| SINet-V2 | 27.0 M | 28.6 | 0.815 | 0.795 | 0.976 | 0.963 | 0.997 | 1.00 |
+
+**Paired bootstrap, COD10K, 95 % CI:**
+- 512 − SINet-V2, corrupted: +0.010 [+0.006, +0.014]
+- 512 − ZoomNet, corrupted: +0.002 [−0.002, +0.007] (not significant)
+- 512 − Ours-Full (1024): clean −0.016 [−0.020, −0.012]; **local corruptions −0.000 [−0.003, +0.003]**; global −0.018 [−0.022, −0.014]
+
+**Reading:**
+- **The resolution hypothesis is confirmed once the model is trained at the lower resolution.** At 512 px, retention rises to SINet-V2's level (0.976; local 0.967 vs 0.963). The absolute score under noise, blur, JPEG and rain is unchanged, while clean (−0.016) and global-corruption scores drop. The test-time-only version (`Ours-Full-in512`) lost accuracy everywhere, so the model must learn at the resolution it is used at.
+- **Ours-Full-512 beats SINet-V2 on every axis on COD10K:** clean 0.824 vs 0.815, corrupted 0.805 vs 0.795 (significant), equal retention, 1.2× faster, 1.5× less memory, 2.6× fewer parameters, 10 % fewer GFLOPs.
+- **A trade-off pair for the paper:** 1024 px for the best accuracy; 512 px for SINet-V2-level robustness at twice the speed, trained in 2.6 h.
+
+### Other datasets (Sα)
+- **CHAMELEON:** Ours-Full-512 clean 0.851, mCorr 0.833, retention 0.978 (local 0.970 vs SINet-V2 0.968).
+- **CAMO:**
+    - Ours-Full: clean 0.816, mCorr 0.785, mCE 1.03.
+    - vs SINet-V2 (0.820 / 0.791): −0.006 [−0.018, +0.007], not significant.
+    - vs ZoomNet (0.820 / 0.771): +0.014 [+0.001, +0.028].
+    - Robustness training +0.018; unseen +0.010 [+0.005, +0.016].
+- **NC4K clean:** Ours-Full 0.859 vs SINet-V2 0.847, ZoomNet 0.853, PFNet 0.829 (SAM2-UNet 0.901, SAM-Adapter 0.884).
+
+### Next
+- Block B (NC4K corrupted, Ours-Full) is running.
+- Optional: Ours-Full-512 on CAMO/NC4K. Then SAM-Adapter, then the table/figure scripts and the paper.
