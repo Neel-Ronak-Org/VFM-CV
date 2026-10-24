@@ -609,3 +609,27 @@ Ours-Full on NC4K, 40 corrupted conditions × 4,121 images.
 ### Next
 - Student: SAM-Adapter sessions (`python scripts/run_benchmark.py --max-hours 10`).
 - Claude: Phase 7, `scripts/make_tables.py` + `scripts/make_figures.py`, which read only `results/*.csv`.
+
+---
+
+## Session 17 — 2026-10-24 (Claude, cloud container) — benchmark complete (Checkpoint 4)
+
+### From the student
+SAM-Adapter finished: COD10K, CAMO and CHAMELEON, 41 conditions each. NC4K stays clean-only by design (~110 h).
+
+### SAM-Adapter results (Sα; retention; mCE)
+- **COD10K:**
+    - Clean 0.884 (highest of all models), mCorr 0.853, retention 0.964 (local 0.948, global 0.992), mCE 0.72.
+    - −0.013 vs SAM2-UNet under corruption [−0.017, −0.009]; +0.041 vs Ours-Full [+0.037, +0.045].
+- **CAMO:** clean 0.847, mCorr 0.811, retention 0.958, mCE 0.90. −0.049 vs SAM2-UNet; +0.027 vs Ours-Full.
+- **CHAMELEON:** clean 0.896, mCorr 0.857, retention 0.956, mCE 1.11. Below SINet-V2 (0.870) and ZoomNet (0.867) under corruption; vs Ours-Full +0.010 [−0.006, +0.025], not significant.
+- **COD10K Dice retention:** Gaussian noise 0.876 and Gaussian blur 0.892, the lowest of all models except ZoomNet's blur.
+
+**Reading:**
+- **Size is not robustness.** The 641 M SAM-Adapter has the best clean score on COD10K but drops behind SAM2-UNet under corruption. On CHAMELEON it falls behind the 27 M SINet-V2.
+- **Independent support for the resolution finding.** The two 1024-px models have almost identical local-corruption retention on COD10K: SAM-Adapter 0.948, Ours-Full 0.949. The 352-px models are higher: SINet-V2 0.963, SAM2-UNet 0.978. Ours-Full-512 is at 0.967.
+- **Our 10 M model vs the 641 M SAM-Adapter:** 0.04 lower on COD10K under corruption, at 84× lower latency and 62× fewer parameters.
+
+### Status
+- Phases 0–4 done. Phase 5 done for all main models. Phase 6 done.
+- **Checkpoint 4:** decide the paper framing with the student. Then Phase 7 (tables/figures scripts), Phase 8 (paper) and Phase 9 (release).
