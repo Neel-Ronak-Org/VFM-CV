@@ -633,3 +633,11 @@ SAM-Adapter finished: COD10K, CAMO and CHAMELEON, 41 conditions each. NC4K stays
 ### Status
 - Phases 0–4 done. Phase 5 done for all main models. Phase 6 done.
 - **Checkpoint 4:** decide the paper framing with the student. Then Phase 7 (tables/figures scripts), Phase 8 (paper) and Phase 9 (release).
+
+### Checkpoint 4 decisions (student, 2026-10-24)
+- **Framing:** benchmark first. The SAM-family corruption benchmark and the resolution–robustness trade-off lead; the adapter is the efficient model that beats the specialists.
+- **Headline "Ours":** both models, as a trade-off pair: Ours-Full (1024 px, best accuracy) and Ours-Full-512 (SINet-V2-level robustness, 2× faster).
+- **Extra runs before writing:**
+    - Ours-Full-512 on CAMO and NC4K.
+    - 3 seeds of Ours-Full-512 (seed 0 existing; `configs/train/ours_full_512_s1.yaml` and `_s2.yaml`, models `Ours-Full-512-s1/-s2`), evaluated on COD10K for mean ± std.
+- Meanwhile, Claude writes the Phase 7 table/figure scripts.
