@@ -1,0 +1,21 @@
+{
+  "run": "ours_full_512_s1",
+  "status": "finished",
+  "git": "a27bbb0",
+  "seed": 1,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "epochs_done": 30,
+  "epochs_planned": 30,
+  "optimizer_steps": 15150,
+  "hours": 2.526,
+  "sec_per_batch": 0.1493,
+  "peak_vram_mb": 391.5,
+  "params": {
+    "total": 10326768,
+    "trainable": 3709200,
+    "frozen": 6617568
+  },
+  "n_train_images": 4040,
+  "finished_at": "2026-10-25 02:21:36"
+}
