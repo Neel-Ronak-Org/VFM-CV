@@ -325,6 +325,16 @@ class OursFull512(RobustAdapterCOD):
     name, run = "Ours-Full-512", "ours_full_512"
 
 
+class OursFull512S1(RobustAdapterCOD):
+    """Ours-Full-512, seed 1 (configs/train/ours_full_512_s1.yaml)."""
+    name, run = "Ours-Full-512-s1", "ours_full_512_s1"
+
+
+class OursFull512S2(RobustAdapterCOD):
+    """Ours-Full-512, seed 2 (configs/train/ours_full_512_s2.yaml)."""
+    name, run = "Ours-Full-512-s2", "ours_full_512_s2"
+
+
 # --- Resolution test (diagnostic, not new models): the same trained weights, fed a low-resolution view ---
 class OursFullIn352(OursFull):
     name, input_res = "Ours-Full-in352", 352

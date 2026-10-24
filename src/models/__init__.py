@@ -19,6 +19,8 @@ REGISTRY = {
     "Ours-Full": "src.models.robust_adapter:OursFull",
     "Ours-Full-15ep": "src.models.robust_adapter:OursFullEp15",
     "Ours-Full-512": "src.models.robust_adapter:OursFull512",
+    "Ours-Full-512-s1": "src.models.robust_adapter:OursFull512S1",
+    "Ours-Full-512-s2": "src.models.robust_adapter:OursFull512S2",
     # Resolution test (same weights, input reduced to N x N first; scripts/resolution_test.py):
     "Ours-Full-in352": "src.models.robust_adapter:OursFullIn352",
     "Ours-Full-in512": "src.models.robust_adapter:OursFullIn512",

@@ -1,0 +1,4 @@
+# Ours-Full-512 with a different random seed (seed 0 = ours_full_512). Seeds change the adapter/prompt
+# initialisation, sample order and augmentation draws; used for mean +- std of the main 512-px model.
+base: ours_full_512.yaml
+seed: 2
