@@ -232,3 +232,35 @@ In total about 3.7 M of the 10.3 M parameters are trained (`count_params()`).
 - **Why this differs from the test-time version:** a model trained at 512 px learned to work with less detail. The 1024-px model fed a shrunk image never learned that, so it lost accuracy everywhere.
 - **What to say:** "Input resolution trades clean accuracy for robustness. Training at 512 px keeps every bit of performance under local corruptions, costs 0.016 Sα on clean images, and halves inference time."
 - Bonus: Ours-Full-512 beats SINet-V2 on COD10K in clean accuracy, accuracy under corruption, speed, memory and size, with equal retention.
+
+## 12. Tables and figures (Phase 7)
+
+**Why scripts:** the brief requires that no number in the paper is typed by hand. The scripts read only `results/*.csv` (plus training summaries and the per-image scores). When a run is added or redone, re-running them updates every table and figure.
+
+| Output | Shows | Paper |
+|---|---|---|
+| `table1_clean.tex` | clean Sα, Eφ, Fβw, MAE on 4 test sets | Table 1 |
+| `table2_robust_COD10K.tex` | clean, mCorr, retention (Sα, Dice), seen/unseen, local/global, mCE | Table 2 (other datasets: appendix) |
+| `table3_ablation.tex` | (a) Clean / Aug / Full / 512 on COD10K; (b) epochs and input resolution on CHAMELEON | Table 3 |
+| `table4_efficiency.tex` | params, GFLOPs, latency, FPS, memory, training hours | Table 4 |
+| `table5_significance.tex` | paired bootstrap 95 % CIs for the key comparisons on all datasets | Table 5 |
+| `table6_percorruption.tex` | Dice retention per corruption (COD10K) | appendix or Table 6 |
+| `fig_architecture` | our model; trained vs frozen parts with measured parameter counts | Fig. 2 |
+| `fig_severity` | Sα vs severity for each corruption, all models (COD10K) | Fig. 3 |
+| `fig_tradeoff` | (a) accuracy under corruption vs latency, with the Pareto front; (b) retention vs latency | Fig. 4 |
+| `fig_resolution` | local vs global retention, models ordered by input size | resolution finding |
+| `fig_heldout` | gain of augmentation / consistency per corruption, seen vs unseen, with 95 % CIs | held-out finding |
+| `fig_teaser`, `fig_qualitative` | example predictions (run on the laptop) | Figs. 1 and 5 |
+
+**Conventions:**
+- Bold marks the best value per column; the oracle is excluded.
+- Ours (512) is shown as mean ± sample standard deviation over the seeds finished for that dataset, and the caption says how many.
+- A "--" means the run doesn't exist (for example, FEDER has no COD10K maps).
+
+**How example images are chosen (state this in the captions):**
+- The images are never hand-picked. They come from fixed rules applied to the per-image results.
+- **Teaser:** the COD10K image at the 90th percentile of Ours (512)'s gain over SINet-V2 under motion blur, an unseen corruption. It is a clear example, not the single best one.
+- **Qualitative grid:** for each condition, the image with the median Ours (512) score (representative), plus the lowest-scoring image for motion blur 5 and rain 5 (failure cases).
+- The chosen images and every panel's score are saved to `results/qualitative_selection.csv`.
+
+**Statistical tests:** `scripts/significance.py` averages each image's Sα over a group of conditions, then takes the per-image difference between two models. It resamples those differences 5,000 times and reports the 95 % interval of their mean. "Significant" means the interval excludes zero.

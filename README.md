@@ -74,6 +74,17 @@ python scripts/resolution_test.py                    # Ours-Full / Ours-Clean fe
 python scripts/resolution_test.py --dataset COD10K
 ```
 
+## Paper tables and figures
+
+Every number in the paper's tables and figures is generated from `results/*.csv`, never typed by hand:
+```bash
+python scripts/summarize_benchmark.py   # results/summary_robustness.csv
+python scripts/significance.py          # results/significance.csv (paired bootstrap CIs)
+python scripts/make_tables.py           # paper/tables/*.tex (the paper \input{}s these)
+python scripts/make_figures.py          # figures/fig_{architecture,severity,tradeoff,resolution,heldout}.pdf/.png
+python scripts/make_qualitative.py      # figures/fig_teaser + fig_qualitative (runs the models: laptop, ~3 min)
+```
+
 ## Repository layout
 
 See §3 of `CLAUDE.md`. `data/` and `checkpoints/` are gitignored; `results/*.csv` are committed and are the only source of numbers for the tables, figures and paper.

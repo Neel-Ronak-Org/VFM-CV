@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\caption{Robustness on CAMO (8 corruptions $\times$ 5 severities). Clean and mCorr: $S_\alpha$; Ret.: mCorr/clean ($S_\alpha$ unless marked); Seen/Unseen: retention on the corruptions used / never used to train our models; Local: noise, blur, JPEG, rain; Global: brightness, contrast, fog; mCE: corruption error relative to SINet-V2. Input: side length in px (ZoomNet$^*$ also uses 0.5$\times$ and 1.5$\times$). $^\ddagger$Oracle with the ground-truth box, not a competitor. Retention alone can favour weaker models; read it with mCorr and mCE.}
+\label{tab:robust-camo}
+\footnotesize
+\begin{tabular}{llccccccccc}
+\toprule
+Model & Input & Clean & mCorr & Ret. & Ret.$_{\mathrm{Dice}}$ & Seen & Unseen & Local & Global & mCE$\downarrow$ \\
+\midrule
+SINet-V2 & 352 & 0.820 & 0.791 & 0.964 & 0.948 & 0.966 & 0.962 & 0.946 & \textbf{0.996} & 1.00 \\
+PFNet & 416 & 0.782 & 0.746 & 0.953 & 0.921 & 0.951 & 0.955 & 0.940 & 0.974 & 1.22 \\
+ZoomNet & 384$^*$ & 0.820 & 0.771 & 0.940 & 0.897 & 0.941 & 0.939 & 0.919 & 0.974 & 1.10 \\
+\midrule
+SAM2-UNet & 352 & \textbf{0.884} & \textbf{0.860} & \textbf{0.973} & \textbf{0.961} & \textbf{0.969} & \textbf{0.978} & \textbf{0.963} & 0.990 & \textbf{0.67} \\
+SAM-Adapter & 1024 & 0.847 & 0.811 & 0.958 & 0.928 & 0.947 & 0.969 & 0.937 & 0.994 & 0.90 \\
+\midrule
+Ours (1024) & 1024 & 0.816 & 0.785 & 0.962 & 0.945 & 0.958 & 0.967 & 0.943 & 0.994 & 1.03 \\
+Ours (512) & 512 & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+\midrule
+MobileSAM + GT box$^\ddagger$ & 1024 & 0.827 & 0.804 & 0.972 & 0.968 & 0.970 & 0.974 & 0.960 & 0.991 & 0.95 \\
+\bottomrule
+\end{tabular}
+\end{table*}
