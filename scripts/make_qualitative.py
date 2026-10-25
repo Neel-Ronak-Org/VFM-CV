@@ -194,7 +194,11 @@ def main():
     if args.only in (None, "grid"):
         grid(ds, base_seed, log)
     out = RESULTS / "qualitative_selection.csv"
-    pd.DataFrame(log).round(4).to_csv(out, index=False)
+    new = pd.DataFrame(log).round(4)
+    if args.only and out.exists():  # keep the rows of the figure that was not regenerated
+        old = pd.read_csv(out)
+        new = pd.concat([old[old.figure != args.only], new], ignore_index=True)
+    new.to_csv(out, index=False)
     print(f"wrote {out.relative_to(REPO)}")
 
 
