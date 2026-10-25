@@ -3,6 +3,7 @@
 \caption{Robustness on NC4K (8 corruptions $\times$ 5 severities). Clean and mCorr: $S_\alpha$; Ret.: mCorr/clean ($S_\alpha$ unless marked); Seen/Unseen: retention on the corruptions used / never used to train our models; Local: noise, blur, JPEG, rain; Global: brightness, contrast, fog; mCE: corruption error relative to SINet-V2. Input: side length in px (ZoomNet$^*$ also uses 0.5$\times$ and 1.5$\times$). $^\ddagger$Oracle with the ground-truth box, not a competitor. Retention alone can favour weaker models; read it with mCorr and mCE.}
 \label{tab:robust-nc4k}
 \footnotesize
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{llccccccccc}
 \toprule
 Model & Input & Clean & mCorr & Ret. & Ret.$_{\mathrm{Dice}}$ & Seen & Unseen & Local & Global & mCE$\downarrow$ \\

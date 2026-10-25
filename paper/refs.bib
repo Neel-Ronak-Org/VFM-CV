@@ -1,0 +1,499 @@
+% refs.bib -- verified bibliography for the COD robustness paper.
+%
+% Verification policy (CLAUDE.md, section 0): every entry below was checked
+% against an authoritative page (publisher / CVF / PMLR / NeurIPS / ICLR /
+% arXiv listing, or the authors' official GitHub repository) on 2026-10-25.
+% The "% verified:" line names the page used. In this environment direct page
+% fetches were only possible for github.com; arXiv, CVF, dblp, IEEE, Springer
+% etc. were blocked, so for those the page content was read through the web
+% search index of that exact page ("via: search index"). Where the authors'
+% GitHub README was opened directly this is marked "via: opened".
+% Any discrepancy between sources is noted in a "% note:" line.
+
+% ---------------------------------------------------------------------------
+% Datasets and COD baselines
+% ---------------------------------------------------------------------------
+
+% verified: https://github.com/GewelsJI/SINet-V2 (2026-10-25)
+% also: https://github.com/DengPingFan/SINet ; https://mlanthology.org/cvpr/2020/fan2020cvpr-camouflaged/
+% via: opened (GitHub READMEs, authors and pages 2777--2787); search index (DOI)
+@inproceedings{fan2020cod,
+  author    = {Fan, Deng-Ping and Ji, Ge-Peng and Sun, Guolei and Cheng, Ming-Ming and Shen, Jianbing and Shao, Ling},
+  title     = {Camouflaged Object Detection},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2777--2787},
+  year      = {2020},
+  doi       = {10.1109/CVPR42600.2020.00285}
+}
+
+% verified: https://github.com/GewelsJI/SINet-V2 (2026-10-25)
+% also: https://arxiv.org/abs/2102.10274 (journal-ref and related DOI)
+% via: opened (GitHub README); search index (arXiv listing)
+@article{fan2022sinetv2,
+  author  = {Fan, Deng-Ping and Ji, Ge-Peng and Cheng, Ming-Ming and Shao, Ling},
+  title   = {Concealed Object Detection},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {44},
+  number  = {10},
+  pages   = {6024--6042},
+  year    = {2022},
+  doi     = {10.1109/TPAMI.2021.3085766}
+}
+
+% verified: https://ecommons.udayton.edu/cps_fac_pub/206 (2026-10-25)
+% also: https://arxiv.org/abs/2105.09451 (preprint)
+% via: search index (volume 184, pages 45--56, DOI 10.1016/j.cviu.2019.04.006)
+@article{le2019camo,
+  author  = {Le, Trung-Nghia and Nguyen, Tam V. and Nie, Zhongliang and Tran, Minh-Triet and Sugimoto, Akihiro},
+  title   = {Anabranch Network for Camouflaged Object Segmentation},
+  journal = {Computer Vision and Image Understanding},
+  volume  = {184},
+  pages   = {45--56},
+  year    = {2019},
+  doi     = {10.1016/j.cviu.2019.04.006}
+}
+
+% verified: https://www.polsl.pl/rau6/?p=99599 (2026-10-25)
+% also: reference list of https://arxiv.org/pdf/2509.15753 (MCOD), which cites it as
+%       "Animal camouflage analysis: Chameleon database. Unpublished manuscript (2018)"
+% via: search index
+% note: no formal publication exists. The dataset page (Silesian University of
+%       Technology) dates the database to 2017 and credits the same six people;
+%       COD papers conventionally cite it as an unpublished 2018 manuscript.
+@misc{skurowski2018chameleon,
+  author       = {Skurowski, Przemys{\l}aw and Abdulameer, Hassan and B{\l}aszczyk, Jakub and Depta, Tomasz and Kornacki, Adam and Kozie{\l}, Przemys{\l}aw},
+  title        = {Animal Camouflage Analysis: {Chameleon} Database},
+  howpublished = {Unpublished manuscript},
+  year         = {2018},
+  url          = {https://www.polsl.pl/rau6/?p=99599}
+}
+
+% verified: https://openaccess.thecvf.com/content/CVPR2021/html/Lv_Simultaneously_Localize_Segment_and_Rank_the_Camouflaged_Objects_CVPR_2021_paper.html (2026-10-25)
+% also: https://github.com/JingZhang617/COD-Rank-Localize-and-Segment
+% via: search index (CVF page, pages 11591--11601); opened (GitHub README)
+% note: first author is spelled "Lv" by CVF and "Lyu" in the authors' README / arXiv.
+%       The CVF (published) spelling is used here.
+@inproceedings{lv2021nc4k,
+  author    = {Lv, Yunqiu and Zhang, Jing and Dai, Yuchao and Li, Aixuan and Liu, Bowen and Barnes, Nick and Fan, Deng-Ping},
+  title     = {Simultaneously Localize, Segment and Rank the Camouflaged Objects},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {11591--11601},
+  year      = {2021}
+}
+
+% verified: https://github.com/Mhaiyang/CVPR2021_PFNet (2026-10-25)
+% via: opened (authors' BibTeX, pages 8772--8781)
+@inproceedings{mei2021pfnet,
+  author    = {Mei, Haiyang and Ji, Ge-Peng and Wei, Ziqi and Yang, Xin and Wei, Xiaopeng and Fan, Deng-Ping},
+  title     = {Camouflaged Object Segmentation with Distraction Mining},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {8772--8781},
+  year      = {2021}
+}
+
+% verified: https://openaccess.thecvf.com/content/CVPR2022/html/Pang_Zoom_in_and_Out_A_Mixed-Scale_Triplet_Network_for_Camouflaged_CVPR_2022_paper.html (2026-10-25)
+% also: https://github.com/lartpang/ZoomNet
+% via: search index (CVF page, pages 2160--2170); opened (GitHub README, authors)
+@inproceedings{pang2022zoomnet,
+  author    = {Pang, Youwei and Zhao, Xiaoqi and Xiang, Tian-Zhu and Zhang, Lihe and Lu, Huchuan},
+  title     = {Zoom In and Out: A Mixed-Scale Triplet Network for Camouflaged Object Detection},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2160--2170},
+  year      = {2022}
+}
+
+% verified: https://github.com/ChunmingHe/FEDER (2026-10-25)
+% also: https://openaccess.thecvf.com/content/CVPR2023/papers/He_Camouflaged_Object_Detection_With_Feature_Decomposition_and_Edge_Reconstruction_CVPR_2023_paper.pdf ;
+%       https://mlanthology.org/cvpr/2023/he2023cvpr-camouflaged (DOI)
+% via: opened (GitHub README, authors); search index (pages 22046--22055, DOI)
+@inproceedings{he2023feder,
+  author    = {He, Chunming and Li, Kai and Zhang, Yachao and Tang, Longxiang and Zhang, Yulun and Guo, Zhenhua and Li, Xiu},
+  title     = {Camouflaged Object Detection with Feature Decomposition and Edge Reconstruction},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {22046--22055},
+  year      = {2023},
+  doi       = {10.1109/CVPR52729.2023.02111}
+}
+
+% ---------------------------------------------------------------------------
+% Segment Anything family and adapters
+% ---------------------------------------------------------------------------
+
+% verified: https://openaccess.thecvf.com/content/ICCV2023/html/Kirillov_Segment_Anything_ICCV_2023_paper.html (2026-10-25)
+% also: https://github.com/facebookresearch/segment-anything (author list)
+% via: search index (CVF page, pages 4015--4026; DOI from mlanthology); opened (GitHub README)
+@inproceedings{kirillov2023sam,
+  author    = {Kirillov, Alexander and Mintun, Eric and Ravi, Nikhila and Mao, Hanzi and Rolland, Chloe and Gustafson, Laura and Xiao, Tete and Whitehead, Spencer and Berg, Alexander C. and Lo, Wan-Yen and Doll{\'a}r, Piotr and Girshick, Ross},
+  title     = {Segment Anything},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+  pages     = {4015--4026},
+  year      = {2023},
+  doi       = {10.1109/ICCV51070.2023.00371}
+}
+
+% verified: https://proceedings.iclr.cc/paper_files/paper/2025/hash/45c1f6a8cbf2da59ebf2c802b4f742cd-Abstract-Conference.html (2026-10-25)
+% also: https://www.iclr.cc/virtual/2025/oral/31878 ; https://github.com/facebookresearch/sam2 (author list)
+% via: search index (ICLR 2025 proceedings, oral); opened (GitHub README)
+% note: published at ICLR 2025 (arXiv:2408.00714, 2024). Key kept as ravi2024sam2
+%       because paper/main.tex already cites it.
+@inproceedings{ravi2024sam2,
+  author    = {Ravi, Nikhila and Gabeur, Valentin and Hu, Yuan-Ting and Hu, Ronghang and Ryali, Chaitanya and Ma, Tengyu and Khedr, Haitham and R{\"a}dle, Roman and Rolland, Chloe and Gustafson, Laura and Mintun, Eric and Pan, Junting and Alwala, Kalyan Vasudev and Carion, Nicolas and Wu, Chao-Yuan and Girshick, Ross and Doll{\'a}r, Piotr and Feichtenhofer, Christoph},
+  title     = {{SAM} 2: Segment Anything in Images and Videos},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2025}
+}
+
+% verified: https://openaccess.thecvf.com/content/ICCV2023W/VCL/html/Chen_SAM-Adapter_Adapting_Segment_Anything_in_Underperformed_Scenes_ICCVW_2023_paper.html (2026-10-25)
+% also: https://github.com/tianrun-chen/SAM-Adapter-PyTorch ; https://arxiv.org/abs/2304.09148
+% via: search index (CVF workshop page: 10 authors, pages 3367--3375; DOI from mlanthology); opened (GitHub README)
+% note: arXiv title is "SAM Fails to Segment Anything? -- SAM-Adapter: Adapting SAM in
+%       Underperformed Scenes: Camouflage, Shadow, Medical Image Segmentation, and More".
+%       The CVF workshop page lists 10 authors (incl. Shangzhan Zhang) and spells the
+%       third author "Chaotao Deng"; the PDF / GitHub README spell it "Chaotao Ding"
+%       and the README BibTeX omits Shangzhan Zhang. The CVF metadata is used here.
+@inproceedings{chen2023samadapter,
+  author    = {Chen, Tianrun and Zhu, Lanyun and Deng, Chaotao and Cao, Runlong and Wang, Yan and Zhang, Shangzhan and Li, Zejian and Sun, Lingyun and Zang, Ying and Mao, Papa},
+  title     = {{SAM-Adapter}: Adapting Segment Anything in Underperformed Scenes},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops (ICCVW)},
+  pages     = {3367--3375},
+  year      = {2023},
+  doi       = {10.1109/ICCVW60793.2023.00361}
+}
+
+% verified: https://github.com/tianrun-chen/SAM-Adapter-PyTorch (2026-10-25)
+% also: https://arxiv.org/abs/2408.04579v2
+% via: opened (authors' BibTeX in README); search index (arXiv listing, title/id)
+@misc{chen2024sam2adapter,
+  author        = {Chen, Tianrun and Lu, Ankang and Zhu, Lanyun and Ding, Chaotao and Yu, Chunan and Ji, Deyi and Li, Zejian and Sun, Lingyun and Mao, Papa and Zang, Ying},
+  title         = {{SAM2-Adapter}: Evaluating \& Adapting Segment Anything 2 in Downstream Tasks: Camouflage, Shadow, Medical Image Segmentation, and More},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2408.04579},
+  eprint        = {2408.04579},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2024}
+}
+
+% verified: https://arxiv.org/abs/2511.19425 (2026-10-25)
+% via: search index (arXiv listing: title, 11 authors, submitted 24 Nov 2025)
+@misc{chen2025sam3adapter,
+  author        = {Chen, Tianrun and Cao, Runlong and Yu, Xinda and Zhu, Lanyun and Ding, Chaotao and Ji, Deyi and Chen, Cheng and Zhu, Qi and Xu, Chunyan and Mao, Papa and Zang, Ying},
+  title         = {{SAM3-Adapter}: Efficient Adaptation of Segment Anything 3 for Camouflage Object Segmentation, Shadow Detection, and Medical Image Segmentation},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2511.19425},
+  eprint        = {2511.19425},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2025}
+}
+
+% verified: https://github.com/WZH0120/SAM2-UNet (2026-10-25)
+% also: https://www.sciopen.com/article/10.1007/s44267-025-00106-w ; https://arxiv.org/abs/2408.08870
+% via: opened (authors' BibTeX for the journal version); search index (DOI, arXiv)
+% note: journal version is Visual Intelligence 4(1):2, 2026. Key kept as
+%       xiong2024sam2unet because paper/main.tex already cites it.
+@article{xiong2024sam2unet,
+  author  = {Xiong, Xinyu and Wu, Zihuang and Tan, Shuangyi and Li, Wenxue and Tang, Feilong and Chen, Ying and Li, Siying and Ma, Jie and Li, Guanbin},
+  title   = {{SAM2-UNet}: Segment Anything 2 Makes Strong Encoder for Natural and Medical Image Segmentation},
+  journal = {Visual Intelligence},
+  volume  = {4},
+  number  = {1},
+  pages   = {2},
+  year    = {2026},
+  doi     = {10.1007/s44267-025-00106-w}
+}
+
+% verified: https://github.com/ChaoningZhang/MobileSAM (2026-10-25)
+% also: https://arxiv.org/abs/2306.14289
+% via: opened (authors' BibTeX); search index (arXiv listing)
+% note: no peer-reviewed version found; cited as arXiv preprint.
+@misc{zhang2023mobilesam,
+  author        = {Zhang, Chaoning and Han, Dongshen and Qiao, Yu and Kim, Jung Uk and Bae, Sung-Ho and Lee, Seungkyu and Hong, Choong Seon},
+  title         = {Faster Segment Anything: Towards Lightweight {SAM} for Mobile Applications},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2306.14289},
+  eprint        = {2306.14289},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2023}
+}
+
+% verified: https://openaccess.thecvf.com/content/CVPR2024/html/Xiong_EfficientSAM_Leveraged_Masked_Image_Pretraining_for_Efficient_Segment_Anything_CVPR_2024_paper.html (2026-10-25)
+% also: https://github.com/yformer/EfficientSAM (author list)
+% via: search index (CVF page: pages 16111--16121; DOI from IEEE CSDL); opened (GitHub README)
+@inproceedings{xiong2024efficientsam,
+  author    = {Xiong, Yunyang and Varadarajan, Bala and Wu, Lemeng and Xiang, Xiaoyu and Xiao, Fanyi and Zhu, Chenchen and Dai, Xiaoliang and Wang, Dilin and Sun, Fei and Iandola, Forrest and Krishnamoorthi, Raghuraman and Chandra, Vikas},
+  title     = {{EfficientSAM}: Leveraged Masked Image Pretraining for Efficient Segment Anything},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {16111--16121},
+  year      = {2024},
+  doi       = {10.1109/CVPR52733.2024.01525}
+}
+
+% verified: https://www.ecva.net/papers/eccv_2022/papers_ECCV/html/4537_ECCV_2022_paper.php (2026-10-25)
+% also: https://github.com/wkcn/TinyViT ; https://github.com/ChaoningZhang/MobileSAM (BibTeX)
+% via: search index (ECVA page, DOI 10.1007/978-3-031-19803-8_5); opened (GitHub READMEs)
+% note: page numbers not confirmed, so omitted.
+@inproceedings{wu2022tinyvit,
+  author    = {Wu, Kan and Zhang, Jinnian and Peng, Houwen and Liu, Mengchen and Xiao, Bin and Fu, Jianlong and Yuan, Lu},
+  title     = {{TinyViT}: Fast Pretraining Distillation for Small Vision Transformers},
+  booktitle = {Proceedings of the European Conference on Computer Vision (ECCV)},
+  year      = {2022},
+  doi       = {10.1007/978-3-031-19803-8_5}
+}
+
+% verified: https://openaccess.thecvf.com/content/ICCV2025/papers/Liu_Improving_SAM_for_Camouflaged_Object_Detection_via_Dual_Stream_Adapters_ICCV_2025_paper.pdf (2026-10-25)
+% also: https://iccv.thecvf.com/virtual/2025/poster/669 ; https://arxiv.org/abs/2503.06042
+% via: search index
+% note: the method targets RGB-D COD; it is called SAM-DSA in the ICCV PDF and SAM-COD
+%       on arXiv. Page numbers not confirmed, so omitted.
+@inproceedings{liu2025samdsa,
+  author    = {Liu, Jiaming and Kong, Linghe and Chen, Guihai},
+  title     = {Improving {SAM} for Camouflaged Object Detection via Dual Stream Adapters},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+  year      = {2025}
+}
+
+% verified: https://neurips.cc/virtual/2023/poster/71673 (2026-10-25)
+% also: https://github.com/SysCV/sam-hq (author list) ; https://www.proceedings.com/075280-1303.html (pages)
+% via: search index (NeurIPS listing, pages 29914--29934); opened (GitHub README)
+@inproceedings{ke2023hqsam,
+  author    = {Ke, Lei and Ye, Mingqiao and Danelljan, Martin and Liu, Yifan and Tai, Yu-Wing and Tang, Chi-Keung and Yu, Fisher},
+  title     = {Segment Anything in High Quality},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {36},
+  pages     = {29914--29934},
+  year      = {2023}
+}
+
+% ---------------------------------------------------------------------------
+% Robustness
+% ---------------------------------------------------------------------------
+
+% verified: https://arxiv.org/abs/2606.02603 (2026-10-25)
+% via: search index (arXiv listing / HTML: title, single author, 8 corruptions x 5 severities)
+@misc{sayem2026cod10kc,
+  author        = {Sayem, Arafat Hossain},
+  title         = {{COD10K-C}: Benchmarking Robustness of Camouflaged Object Detection Under Natural Image Corruptions},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2606.02603},
+  eprint        = {2606.02603},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2026}
+}
+
+% verified: https://iclr.cc/virtual/2019/poster/731 (2026-10-25)
+% also: https://github.com/hendrycks/robustness (authors' BibTeX) ; https://arxiv.org/abs/1903.12261
+% via: search index (ICLR 2019 poster page); opened (GitHub README)
+@inproceedings{hendrycks2019imagenetc,
+  author    = {Hendrycks, Dan and Dietterich, Thomas},
+  title     = {Benchmarking Neural Network Robustness to Common Corruptions and Perturbations},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+% verified: https://arxiv.org/abs/2305.16220 (2026-10-25)
+% also: https://ar5iv.labs.arxiv.org/html/2305.16220
+% via: search index (arXiv listing: 8 authors, submitted 25 May 2023)
+@misc{huang2023robustsam_eval,
+  author        = {Huang, Yihao and Cao, Yue and Li, Tianlin and Juefei-Xu, Felix and Lin, Di and Tsang, Ivor W. and Liu, Yang and Guo, Qing},
+  title         = {On the Robustness of Segment Anything},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2305.16220},
+  eprint        = {2305.16220},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2023}
+}
+
+% verified: https://arxiv.org/abs/2306.07713v3 (2026-10-25)
+% via: search index (arXiv listing)
+% note: v3 (4 Sep 2023) lists 6 authors; v1/v2 also listed Shehbaz Tariq. Latest version used.
+@misc{qiao2023samcorruptions,
+  author        = {Qiao, Yu and Zhang, Chaoning and Kang, Taegoo and Kim, Donghun and Zhang, Chenshuang and Hong, Choong Seon},
+  title         = {Robustness of {SAM}: Segment Anything Under Corruptions and Beyond},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2306.07713},
+  eprint        = {2306.07713},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2023}
+}
+
+% verified: https://openaccess.thecvf.com/content/CVPR2024/html/Chen_RobustSAM_Segment_Anything_Robustly_on_Degraded_Images_CVPR_2024_paper.html (2026-10-25)
+% also: https://github.com/robustsam/RobustSAM (author list)
+% via: search index (CVF page, pages 4081--4091; DOI from mlanthology); opened (GitHub README)
+@inproceedings{chen2024robustsam,
+  author    = {Chen, Wei-Ting and Vong, Yu-Jiet and Kuo, Sy-Yen and Ma, Sizhou and Wang, Jian},
+  title     = {{RobustSAM}: Segment Anything Robustly on Degraded Images},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {4081--4091},
+  year      = {2024},
+  doi       = {10.1109/CVPR52733.2024.00391}
+}
+
+% verified: https://arxiv.org/abs/2506.02882v1 (2026-10-25)
+% also: https://mlanthology.org/neurips/2025/lee2025neurips-garasam ; https://cvlab.postech.ac.kr/news/187
+% via: search index
+% note: accepted at NeurIPS 2025 (mlanthology record and POSTECH lab news). The arXiv
+%       abstract page spells the second author "Yeho Kwon"; the paper HTML and the
+%       NeurIPS record use "Yeho Gwon", which is used here. Pages not yet confirmed.
+@inproceedings{gara2025,
+  author    = {Lee, Sohyun and Gwon, Yeho and Hoyer, Lukas and Kwak, Suha},
+  title     = {{GaRA-SAM}: Robustifying Segment Anything Model with Gated-Rank Adaptation},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2025}
+}
+
+% verified: https://arxiv.org/html/2503.22180v1 (2026-10-25)
+% also: https://web3.arxiv.org/abs/2503.22180
+% via: search index (arXiv listing: 7 authors, submitted 28 Mar 2025)
+% note: no peer-reviewed version found; cited as arXiv preprint.
+@misc{guan2025krnet,
+  author        = {Guan, Juwei and Fang, Xiaolin and Kim, Donghyun and Gong, Haotian and Zhu, Tongxin and Ling, Zhen and Yang, Ming},
+  title         = {Knowledge Rectification for Camouflaged Object Detection: Unlocking Insights from Low-Quality Data},
+  howpublished  = {arXiv preprint},
+  note          = {arXiv:2503.22180},
+  eprint        = {2503.22180},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  year          = {2025}
+}
+
+% verified: https://iclr.cc/virtual_2020/poster_S1gmrxHFvB.html (2026-10-25)
+% also: https://github.com/google-research/augmix (authors' BibTeX)
+% via: search index (ICLR 2020 poster page); opened (GitHub README)
+@inproceedings{hendrycks2020augmix,
+  author    = {Hendrycks, Dan and Mu, Norman and Cubuk, Ekin D. and Zoph, Barret and Gilmer, Justin and Lakshminarayanan, Balaji},
+  title     = {{AugMix}: A Simple Data Processing Method to Improve Robustness and Uncertainty},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020}
+}
+
+% ---------------------------------------------------------------------------
+% Metrics and losses
+% ---------------------------------------------------------------------------
+
+% verified: https://openaccess.thecvf.com/content_iccv_2017/html/Fan_Structure-Measure_A_New_ICCV_2017_paper.html (2026-10-25)
+% via: search index (CVF page, pages 4548--4557)
+% note: the GitHub repo DengPingFan/S-measure now points to the IJCV 2021 extension
+%       (Cheng and Fan); the original ICCV 2017 paper is cited here.
+@inproceedings{fan2017smeasure,
+  author    = {Fan, Deng-Ping and Cheng, Ming-Ming and Liu, Yun and Li, Tao and Borji, Ali},
+  title     = {Structure-Measure: A New Way to Evaluate Foreground Maps},
+  booktitle = {Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
+  pages     = {4548--4557},
+  year      = {2017}
+}
+
+% verified: https://ijcai.org/proceedings/2018/97 (2026-10-25)
+% also: https://github.com/DengPingFan/E-measure (authors' BibTeX)
+% via: search index (IJCAI page, pages 698--704, DOI); opened (GitHub README)
+@inproceedings{fan2018emeasure,
+  author    = {Fan, Deng-Ping and Gong, Cheng and Cao, Yang and Ren, Bo and Cheng, Ming-Ming and Borji, Ali},
+  title     = {Enhanced-alignment Measure for Binary Foreground Map Evaluation},
+  booktitle = {Proceedings of the Twenty-Seventh International Joint Conference on Artificial Intelligence (IJCAI)},
+  pages     = {698--704},
+  year      = {2018},
+  doi       = {10.24963/ijcai.2018/97}
+}
+
+% verified: https://openaccess.thecvf.com/content_cvpr_2014/html/Margolin_How_to_Evaluate_2014_CVPR_paper.html (2026-10-25)
+% also: https://webee.technion.ac.il/people/cgm/Computer-Graphics-Multimedia/Software/FGEval/
+% via: search index (CVF page, pages 248--255, DOI 10.1109/CVPR.2014.39)
+@inproceedings{margolin2014wfm,
+  author    = {Margolin, Ran and Zelnik-Manor, Lihi and Tal, Ayellet},
+  title     = {How to Evaluate Foreground Maps?},
+  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {248--255},
+  year      = {2014},
+  doi       = {10.1109/CVPR.2014.39}
+}
+
+% verified: https://github.com/DengPingFan/PraNet (2026-10-25)
+% also: https://pure.nwpu.edu.cn/en/publications/pranet-parallel-reverse-attention-network-for-polyp-segmentation
+% via: opened (authors' BibTeX, pages 263--273); search index (LNCS 12266, DOI)
+@inproceedings{fan2020pranet,
+  author    = {Fan, Deng-Ping and Ji, Ge-Peng and Zhou, Tao and Chen, Geng and Fu, Huazhu and Shen, Jianbing and Shao, Ling},
+  title     = {{PraNet}: Parallel Reverse Attention Network for Polyp Segmentation},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI)},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12266},
+  pages     = {263--273},
+  publisher = {Springer},
+  year      = {2020},
+  doi       = {10.1007/978-3-030-59725-2_26}
+}
+
+% verified: https://github.com/lartpang/PySODMetrics (2026-10-25)
+% also: https://pypi.org/pypi/pysodmetrics/json (version 1.6.2, released 2026-03-18, MIT)
+% via: opened (GitHub README; PyPI JSON metadata)
+% note: the maintainer "lartpang" is Youwei Pang (same account hosts ZoomNet, first
+%       author Youwei Pang). The README now also asks users to cite the arXiv paper
+%       arXiv:2607.00886 (Pang and Zhao, 2026), which was NOT independently verified.
+@misc{pysodmetrics,
+  author       = {Pang, Youwei},
+  title        = {{PySODMetrics}: A Simple and Efficient Implementation of {SOD} Metrics},
+  howpublished = {\url{https://github.com/lartpang/PySODMetrics}},
+  note         = {{Python} package, version 1.6.2},
+  year         = {2026}
+}
+
+% ---------------------------------------------------------------------------
+% Architecture, adapters and optimisation
+% ---------------------------------------------------------------------------
+
+% verified: https://neurips.cc/virtual/2022/poster/54295 (2026-10-25)
+% also: https://github.com/ShoufaChen/AdaptFormer (author list) ; https://www.proceedings.com/068431-1212.html (pages)
+% via: search index (NeurIPS listing; pages 16664--16678); opened (GitHub README)
+@inproceedings{chen2022adaptformer,
+  author    = {Chen, Shoufa and Ge, Chongjian and Tong, Zhan and Wang, Jiangliu and Song, Yibing and Wang, Jue and Luo, Ping},
+  title     = {{AdaptFormer}: Adapting Vision Transformers for Scalable Visual Recognition},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {35},
+  pages     = {16664--16678},
+  year      = {2022}
+}
+
+% verified: https://github.com/microsoft/LoRA (2026-10-25)
+% also: https://iclr.cc/virtual/2022/poster/6319 ; https://openreview.net/forum?id=nZeVKeeFYf9
+% via: opened (authors' BibTeX); search index (ICLR 2022 poster)
+@inproceedings{hu2022lora,
+  author    = {Hu, Edward J. and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
+  title     = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2022}
+}
+
+% verified: https://iclr.cc/virtual/2019/poster/935 (2026-10-25)
+% also: https://openreview.net/pdf/5963886abef941684ffc0cf670297e47fb1e5155.pdf ("Published as a conference paper at ICLR 2019")
+% via: search index
+@inproceedings{loshchilov2019adamw,
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  title     = {Decoupled Weight Decay Regularization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+% verified: https://research.google/pubs/an-image-is-worth-16x16-words-transformers-for-image-recognition-at-scale/ (2026-10-25)
+% also: https://openreview.net/forum?id=YicbFdNTTy ; https://mlanthology.org/iclr/2021/dosovitskiy2021iclr-image
+% via: search index (12 authors, ICLR 2021)
+@inproceedings{dosovitskiy2021vit,
+  author    = {Dosovitskiy, Alexey and Beyer, Lucas and Kolesnikov, Alexander and Weissenborn, Dirk and Zhai, Xiaohua and Unterthiner, Thomas and Dehghani, Mostafa and Minderer, Matthias and Heigold, Georg and Gelly, Sylvain and Uszkoreit, Jakob and Houlsby, Neil},
+  title     = {An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2021}
+}
+
+% verified: https://proceedings.mlr.press/v97/houlsby19a.html (2026-10-25)
+% via: search index (PMLR 97:2790--2799, 8 authors)
+@inproceedings{houlsby2019adapters,
+  author    = {Houlsby, Neil and Giurgiu, Andrei and Jastrzebski, Stanislaw and Morrone, Bruna and De Laroussilhe, Quentin and Gesmundo, Andrea and Attariyan, Mona and Gelly, Sylvain},
+  title     = {Parameter-Efficient Transfer Learning for {NLP}},
+  booktitle = {Proceedings of the 36th International Conference on Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {97},
+  pages     = {2790--2799},
+  year      = {2019}
+}

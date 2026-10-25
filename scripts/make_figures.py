@@ -5,7 +5,8 @@
 
   fig_architecture   our model (drawn; parameter counts are the measured ones from Table 4 / the code)
   fig_severity       S-alpha vs severity for each corruption on COD10K (paper Fig. 3)
-  fig_tradeoff       accuracy under corruption and retention vs latency on COD10K (paper Fig. 4)
+  fig_tradeoff       accuracy under corruption and retention vs latency on COD10K (supplementary);
+                     fig_tradeoff_main = panel (a) at column width (paper Fig. 4)
   fig_resolution     retention under local vs global corruptions, ordered by input resolution
   fig_heldout        gain of our robustness training per corruption, seen vs unseen (COD10K)
 Image figures (teaser, qualitative grid) need the models and data: scripts/make_qualitative.py on the laptop.
@@ -85,7 +86,7 @@ def curve(bench, model, dataset, corruption, n_cond) -> np.ndarray | None:
 def fig_severity(bench, protocol, dataset="COD10K"):
     n_cond = len(protocol["corruptions"]) * len(protocol["severities"]) + 1
     corrs = protocol["seen"] + protocol["unseen"]
-    fig, axes = plt.subplots(2, 4, figsize=(COL2, 3.3), sharex=True, sharey=True)
+    fig, axes = plt.subplots(2, 4, figsize=(COL2, 2.9), sharex=True, sharey=True)
     for ax, c in zip(axes.flat, corrs):
         for m in BENCH_MODELS:
             y = curve(bench, m, dataset, c, n_cond)
@@ -150,6 +151,23 @@ def fig_tradeoff(bench, protocol, dataset="COD10K"):
     axes[1].set_title(f"(b) Robustness, {dataset} (marker area $\\propto$ $\\sqrt{{\\mathrm{{params}}}}$)")
     fig.tight_layout()
     save(fig, "fig_tradeoff")
+    # single-column version for the main paper: panel (a) only
+    fig, ax = plt.subplots(figsize=(COL1, 2.4))
+    for m, lat, mc, _, par in pts:
+        st = STYLE[m]
+        ax.scatter(lat, mc, s=18 + 9 * np.sqrt(par), color=st["color"], marker=st["marker"], edgecolor="black",
+                   linewidth=0.4, zorder=3)
+        dx, dy, ha = LABEL_OFFSETS[0].get(m, (6, 3, "left"))
+        ax.annotate(display(m), (lat, mc), xytext=(dx, dy), textcoords="offset points", fontsize=6.5, ha=ha)
+    if len(front) > 1:
+        ax.plot(*zip(*front), color="#0072B2", lw=0.8, ls="--", zorder=1, label="Pareto front")
+        ax.legend(loc="lower right", frameon=False)
+    ax.set_xscale("log")
+    ax.margins(x=0.15, y=0.12)
+    ax.set_xlabel("Latency per image (ms, log scale)")
+    ax.set_ylabel(r"Mean $S_\alpha$ under corruption, " + dataset)
+    fig.tight_layout()
+    save(fig, "fig_tradeoff_main")
 
 
 def fig_resolution(bench, protocol, dataset="COD10K"):

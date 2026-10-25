@@ -10,7 +10,8 @@ Images are picked by fixed rules from the per-image results (results/per_image/.
           clear but not the single best example; say so in the caption). Columns: severity 0, 2, 4.
   grid:   one row per (corruption, severity) in GRID_ROWS: the image whose Ours (512) S-alpha is the MEDIAN
           (representative), then FAILURE_ROWS: the image where Ours (512) scores LOWEST (failure cases).
-Writes figures/fig_teaser.pdf/.png, figures/fig_qualitative.pdf/.png and results/qualitative_selection.csv
+Writes figures/fig_teaser, fig_qualitative (5 rows, main paper), fig_qualitative_full (all rows, supplement)
+and results/qualitative_selection.csv
 (chosen images and every panel's S-alpha, so captions can quote them).
 """
 from __future__ import annotations
@@ -40,6 +41,8 @@ DATASET = "COD10K"
 GRID_MODELS = ["SINet-V2", "ZoomNet", "SAM2-UNet", "SAM-Adapter", "Ours-Full", "Ours-Full-512"]
 GRID_ROWS = [("gaussian_noise", 4), ("gaussian_blur", 4), ("motion_blur", 4), ("rain", 4), ("jpeg_compression", 5)]
 FAILURE_ROWS = [("motion_blur", 5), ("rain", 5)]
+# rows of the compact grid in the main paper (fig_qualitative); the full grid goes to the supplement
+MAIN_ROWS = [("gaussian_noise", 4), ("motion_blur", 4), ("rain", 4), ("motion_blur", 5), ("rain", 5)]
 TEASER_MODELS = ["SINet-V2", "Ours-Full-512"]
 TEASER_CORRUPTION, TEASER_SEVERITIES = "motion_blur", [0, 2, 4]
 PER_IMAGE = RESULTS / "per_image" / "benchmark"
@@ -145,7 +148,13 @@ def teaser(ds, base_seed, quantile, log):
 
 
 def grid(ds, base_seed, log):
-    rows = pick_rows()
+    rows_all = pick_rows()
+    for rows, out_name in ((rows_all, "fig_qualitative_full"),
+                           ([r for r in rows_all if (r[0], r[1]) in MAIN_ROWS], "fig_qualitative")):
+        _grid(ds, base_seed, log if out_name == "fig_qualitative_full" else [], rows, out_name)
+
+
+def _grid(ds, base_seed, log, rows, out_name):
     jobs = [(name, c, s) for c, s, name, _ in rows]
     cache, preds = run_models(GRID_MODELS, jobs, ds, base_seed)
     ncol = 2 + len(GRID_MODELS)
@@ -166,9 +175,9 @@ def grid(ds, base_seed, log):
                         "rule": f"{kind} Ours-512 S-alpha for this condition"})
     fig.subplots_adjust(left=0.06, right=0.995, top=0.96, bottom=0.005)
     for ext in ("pdf", "png"):
-        fig.savefig(REPO / "figures" / f"fig_qualitative.{ext}", bbox_inches="tight", pad_inches=0.02)
+        fig.savefig(REPO / "figures" / f"{out_name}.{ext}", bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
-    print("wrote figures/fig_qualitative.pdf/.png")
+    print(f"wrote figures/{out_name}.pdf/.png")
 
 
 def main():
