@@ -81,7 +81,7 @@ def test_significance_on_per_image_files(tmp_path):
 def test_table_formatting_and_bold(bench):
     import make_tables as T
     assert T.fmt(None) == T.DASH
-    assert T.fmt(0.81234, 0.0012) == "0.812{\\tiny$\\pm$0.001}"
+    assert T.fmt(0.81234, 0.0012) == "0.812{\\tiny$\\pm$.001}"
     assert T.best_flags({"a": 0.5, "b": 0.7, "c": None}, lower=False) == {"b"}
     assert T.best_flags({"a": 0.5, "b": 0.7}, lower=True) == {"a"}
     t2 = T.table2(bench, "COD10K", load_protocol())
