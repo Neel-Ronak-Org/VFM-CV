@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\caption{Efficiency on one NVIDIA GeForce RTX 3050 Laptop GPU (4 GB), batch 1, end-to-end on a 768$\times$1024 image (median over runs). Precision as in each model's official inference. Training: our full training run on the same laptop GPU.}
+\label{tab:efficiency}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lllcccccc}
+\toprule
+Model & Input & Prec. & Params (M) & GFLOPs & Latency (ms) & FPS & VRAM (MB) & Train (h) \\
+\midrule
+SINet-V2 & 352 & fp32 & 27.0 & 24.3 & 28.6 & 35.0 & 134 & -- \\
+PFNet & 416 & fp32 & 46.5 & 53.0 & 37.8 & 26.4 & 258 & -- \\
+ZoomNet & 384$^*$ & fp32 & 32.4 & 202.7 & 94.4 & 10.6 & 410 & -- \\
+SAM2-UNet & 352 & fp16 & 216.5 & 278.8 & 71.3 & 14.0 & 879 & -- \\
+SAM-Adapter & 1024 & fp16 & 641.3 & 5979.2 & 3840.6 & 0.3 & 2477 & -- \\
+Ours (1024) & 1024 & fp16 & \textbf{10.3} & 83.2 & 45.6 & 21.9 & 181 & 8.5 \\
+Ours (512) & 512 & fp16 & \textbf{10.3} & \textbf{22.1} & \textbf{23.1} & \textbf{43.2} & \textbf{87} & 2.6 \\
+\bottomrule
+\end{tabular}}
+\end{table}

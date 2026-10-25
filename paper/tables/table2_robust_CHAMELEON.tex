@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\caption{Robustness on CHAMELEON (8 corruptions $\times$ 5 severities). Clean and mCorr: $S_\alpha$; Ret.: mCorr/clean ($S_\alpha$ unless marked); Seen/Unseen: retention on the corruptions used / never used to train our models; Local: noise, blur, JPEG, rain; Global: brightness, contrast, fog; mCE: corruption error relative to SINet-V2. Input: side length in px (ZoomNet$^*$ also uses 0.5$\times$ and 1.5$\times$). $^\ddagger$Oracle with the ground-truth box, not a competitor. Retention alone can favour weaker models; read it with mCorr and mCE.}
+\label{tab:robust-chameleon}
+\footnotesize
+\begin{tabular}{llccccccccc}
+\toprule
+Model & Input & Clean & mCorr & Ret. & Ret.$_{\mathrm{Dice}}$ & Seen & Unseen & Local & Global & mCE$\downarrow$ \\
+\midrule
+SINet-V2 & 352 & 0.888 & 0.870 & \textbf{0.980} & \textbf{0.971} & \textbf{0.986} & 0.975 & 0.968 & \textbf{1.000} & 1.00 \\
+PFNet & 416 & 0.882 & 0.849 & 0.963 & 0.942 & 0.967 & 0.958 & 0.950 & 0.983 & 1.17 \\
+ZoomNet & 384$^*$ & 0.902 & 0.867 & 0.961 & 0.938 & 0.962 & 0.960 & 0.944 & 0.989 & 1.03 \\
+\midrule
+SAM2-UNet & 352 & \textbf{0.914} & \textbf{0.896} & \textbf{0.980} & \textbf{0.971} & 0.978 & \textbf{0.982} & \textbf{0.972} & 0.994 & \textbf{0.81} \\
+SAM-Adapter & 1024 & 0.896 & 0.857 & 0.956 & 0.922 & 0.947 & 0.965 & 0.937 & 0.989 & 1.11 \\
+\midrule
+Ours (1024) & 1024 & 0.883 & 0.847 & 0.959 & 0.940 & 0.957 & 0.962 & 0.938 & 0.995 & 1.18 \\
+Ours (512) & 512 & 0.851 & 0.833 & 0.978 & 0.969 & 0.978 & 0.979 & 0.970 & 0.992 & 1.31 \\
+\midrule
+MobileSAM + GT box$^\ddagger$ & 1024 & 0.787 & 0.762 & 0.968 & 0.962 & 0.966 & 0.971 & 0.954 & 0.993 & 1.86 \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Clean-image results on the four COD test sets. Best per column in bold (oracle excluded). $^\dagger$FEDER: scored from the authors' released prediction maps (no COD10K maps released; trained on COD10K-train only). $^\ddagger$Oracle: MobileSAM prompted with the ground-truth box, an analysis probe, not a competitor.}
+\label{tab:clean}
+\footnotesize
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lcccccccccccccccc}
+\toprule
+ & \multicolumn{4}{c}{CHAMELEON} & \multicolumn{4}{c}{CAMO} & \multicolumn{4}{c}{COD10K} & \multicolumn{4}{c}{NC4K} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9} \cmidrule(lr){10-13} \cmidrule(lr){14-17}
+Model & $S_\alpha\uparrow$ & $E_\phi\uparrow$ & $F_\beta^w\uparrow$ & MAE$\downarrow$ & $S_\alpha\uparrow$ & $E_\phi\uparrow$ & $F_\beta^w\uparrow$ & MAE$\downarrow$ & $S_\alpha\uparrow$ & $E_\phi\uparrow$ & $F_\beta^w\uparrow$ & MAE$\downarrow$ & $S_\alpha\uparrow$ & $E_\phi\uparrow$ & $F_\beta^w\uparrow$ & MAE$\downarrow$ \\
+\midrule
+SINet-V2 & 0.888 & 0.941 & 0.816 & 0.030 & 0.820 & 0.882 & 0.743 & 0.070 & 0.815 & 0.887 & 0.680 & 0.037 & 0.847 & 0.902 & 0.769 & 0.048 \\
+PFNet & 0.882 & 0.931 & 0.810 & 0.033 & 0.782 & 0.842 & 0.696 & 0.085 & 0.800 & 0.878 & 0.660 & 0.040 & 0.829 & 0.887 & 0.745 & 0.053 \\
+ZoomNet & 0.902 & 0.943 & 0.844 & 0.023 & 0.820 & 0.877 & 0.751 & 0.066 & 0.839 & 0.888 & 0.727 & 0.029 & 0.853 & 0.896 & 0.784 & 0.044 \\
+FEDER$^\dagger$ & 0.887 & 0.946 & 0.834 & 0.030 & 0.802 & 0.867 & 0.738 & 0.071 & -- & -- & -- & -- & 0.847 & 0.907 & 0.789 & 0.044 \\
+\midrule
+SAM2-UNet & \textbf{0.914} & \textbf{0.962} & \textbf{0.865} & \textbf{0.022} & \textbf{0.884} & \textbf{0.932} & \textbf{0.845} & \textbf{0.042} & 0.880 & \textbf{0.937} & 0.801 & \textbf{0.021} & \textbf{0.901} & \textbf{0.941} & \textbf{0.858} & \textbf{0.029} \\
+SAM-Adapter & 0.896 & 0.919 & 0.830 & 0.032 & 0.847 & 0.874 & 0.774 & 0.070 & \textbf{0.884} & 0.919 & \textbf{0.807} & 0.025 & 0.884 & 0.905 & 0.818 & 0.041 \\
+\midrule
+Ours (1024) & 0.883 & 0.910 & 0.777 & 0.039 & 0.816 & 0.834 & 0.702 & 0.093 & 0.840 & 0.881 & 0.702 & 0.040 & 0.859 & 0.884 & 0.755 & 0.054 \\
+Ours (512) & 0.851 & 0.884 & 0.725 & 0.045 & -- & -- & -- & -- & 0.824 & 0.865 & 0.667 & 0.042 & -- & -- & -- & -- \\
+\midrule
+MobileSAM + GT box$^\ddagger$ & 0.787 & 0.816 & 0.670 & 0.109 & 0.827 & 0.846 & 0.746 & 0.095 & 0.827 & 0.864 & 0.713 & 0.065 & 0.850 & 0.880 & 0.770 & 0.072 \\
+\bottomrule
+\end{tabular}
+\end{table*}

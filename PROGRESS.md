@@ -641,3 +641,27 @@ SAM-Adapter finished: COD10K, CAMO and CHAMELEON, 41 conditions each. NC4K stays
     - Ours-Full-512 on CAMO and NC4K.
     - 3 seeds of Ours-Full-512 (seed 0 existing; `configs/train/ours_full_512_s1.yaml` and `_s2.yaml`, models `Ours-Full-512-s1/-s2`), evaluated on COD10K for mean ± std.
 - Meanwhile, Claude writes the Phase 7 table/figure scripts.
+
+---
+
+## Session 18 — 2026-10-24 (Claude, cloud container) — Phase 7: tables and figures
+
+### Done
+- **`src/reporting.py`:** shared helpers. Model metadata (display names, groups, input size), robustness summaries (clean, mCorr, retention incl. Dice / seen / unseen / local / global, per-corruption values, mCE), seed aggregation (mean ± sample std) and the paired bootstrap.
+- **`scripts/significance.py` → `results/significance.csv`:** 89 comparisons over 4 datasets, 5,000 resamples, seed 0. Only complete groups are tested.
+- **`scripts/make_tables.py` → `paper/tables/`:**
+    - table1_clean
+    - table2_robust_{COD10K, CAMO, CHAMELEON, NC4K}
+    - table3_ablation
+    - table4_efficiency
+    - table5_significance
+    - table6_percorruption
+    - Best value per column in bold; Ours (512) as mean ± std over its seeds.
+- **`scripts/make_figures.py` → `figures/`:** fig_architecture, fig_severity, fig_tradeoff (with Pareto front), fig_resolution, fig_heldout (with 95 % CIs). Colour-blind-safe palette, sized for IEEE columns.
+- **`scripts/make_qualitative.py` (laptop):** fig_teaser and fig_qualitative. Images are selected by fixed rules from the per-image results (teaser: 90th-percentile gain under motion blur; grid: median and worst cases), and the choices are logged to `results/qualitative_selection.csv`.
+- All tables and figures **compile in IEEEtran** (`conference`), with no errors or overfull boxes (checked with pdflatex in the container).
+- Tests: `tests/test_reporting.py` (5 new); 105 pass.
+
+### Next
+- Student, after Blocks C and D: `python scripts/make_qualitative.py`, then push `figures/` and `results/`.
+- Claude: Phase 8 paper draft (`paper/main.tex`, `refs.bib` with verified entries).
