@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{Clean-image results on the four COD test sets. Best per column in bold (oracle excluded). $^\dagger$FEDER: scored from the authors' released prediction maps (no COD10K maps released; trained on COD10K-train only). $^\ddagger$Oracle: MobileSAM prompted with the ground-truth box, an analysis probe, not a competitor.}
+\caption{Clean-image results on the four COD test sets. Best per column in bold (oracle excluded). $^\dagger$FEDER: scored from the authors' released prediction maps (no COD10K maps released; trained on COD10K-train only). $^\ddagger$Oracle: MobileSAM prompted with the ground-truth box, an analysis probe, not a competitor. Ours (512): mean $\pm$ std over 3 seeds.}
 \label{tab:clean}
 \footnotesize
 \setlength{\tabcolsep}{2.6pt}
@@ -19,7 +19,7 @@ SAM2-UNet & \textbf{0.914} & \textbf{0.962} & \textbf{0.865} & \textbf{0.022} & 
 SAM-Adapter & 0.896 & 0.919 & 0.830 & 0.032 & 0.847 & 0.874 & 0.774 & 0.070 & \textbf{0.884} & 0.919 & \textbf{0.807} & 0.025 & 0.884 & 0.905 & 0.818 & 0.041 \\
 \midrule
 Ours (1024) & 0.883 & 0.910 & 0.777 & 0.039 & 0.816 & 0.834 & 0.702 & 0.093 & 0.840 & 0.881 & 0.702 & 0.040 & 0.859 & 0.884 & 0.755 & 0.054 \\
-Ours (512) & 0.851 & 0.884 & 0.725 & 0.045 & -- & -- & -- & -- & 0.824 & 0.865 & 0.667 & 0.042 & -- & -- & -- & -- \\
+Ours (512) & 0.851 & 0.884 & 0.725 & 0.045 & 0.825 & 0.843 & 0.710 & 0.084 & 0.823{\tiny$\pm$0.001} & 0.864{\tiny$\pm$0.001} & 0.665{\tiny$\pm$0.003} & 0.042{\tiny$\pm$0.000} & 0.861 & 0.888 & 0.758 & 0.051 \\
 \midrule
 MobileSAM + GT box$^\ddagger$ & 0.787 & 0.816 & 0.670 & 0.109 & 0.827 & 0.846 & 0.746 & 0.095 & 0.827 & 0.864 & 0.713 & 0.065 & 0.850 & 0.880 & 0.770 & 0.072 \\
 \bottomrule

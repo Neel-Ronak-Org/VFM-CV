@@ -1,0 +1,49 @@
+figure,image,corruption,severity,model,Sm,rule
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,clean,0,SINet-V2,0.6632,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,clean,0,Ours-Full-512,0.8545,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,motion_blur,2,SINet-V2,0.6651,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,motion_blur,2,Ours-Full-512,0.8386,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,motion_blur,4,SINet-V2,0.6577,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+teaser,COD10K-CAM-3-Flying-61-Katydid-4063,motion_blur,4,Ours-Full-512,0.7582,quantile 0.9 of Ours-512 minus SINet-V2 gain under motion_blur
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,SINet-V2,0.8036,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,ZoomNet,0.4969,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,SAM2-UNet,0.8597,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,SAM-Adapter,0.7594,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,Ours-Full,0.7299,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-59-Grasshopper-3849,gaussian_noise,4,Ours-Full-512,0.8275,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,SINet-V2,0.8074,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,ZoomNet,0.5878,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,SAM2-UNet,0.8583,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,SAM-Adapter,0.8726,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,Ours-Full,0.7861,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-23-Cat-1520,gaussian_blur,4,Ours-Full-512,0.8403,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,SINet-V2,0.8608,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,ZoomNet,0.8573,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,SAM2-UNet,0.9614,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,SAM-Adapter,0.8914,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,Ours-Full,0.8984,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-56-Cicada-3463,motion_blur,4,Ours-Full-512,0.8422,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,SINet-V2,0.7869,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,ZoomNet,0.882,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,SAM2-UNet,0.8857,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,SAM-Adapter,0.938,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,Ours-Full,0.8199,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-45-Spider-2690,rain,4,Ours-Full-512,0.7963,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,SINet-V2,0.8167,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,ZoomNet,0.9056,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,SAM2-UNet,0.9476,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,SAM-Adapter,0.963,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,Ours-Full,0.6687,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-2-Terrestrial-24-Caterpillar-1557,jpeg_compression,5,Ours-Full-512,0.8488,median Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,SINet-V2,0.7405,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,ZoomNet,0.7578,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,SAM2-UNet,0.7566,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,SAM-Adapter,0.672,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,Ours-Full,0.4863,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-1-Aquatic-13-Pipefish-566,motion_blur,5,Ours-Full-512,0.2682,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,SINet-V2,0.6331,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,ZoomNet,0.6354,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,SAM2-UNet,0.3723,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,SAM-Adapter,0.6176,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,Ours-Full,0.6473,failure Ours-512 S-alpha for this condition
+grid,COD10K-CAM-3-Flying-61-Katydid-4224,rain,5,Ours-Full-512,0.2456,failure Ours-512 S-alpha for this condition
