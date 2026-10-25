@@ -102,8 +102,16 @@ def run_models(models: list[str], jobs: list[tuple[str, str, int]], ds: CODDatas
     return cache, preds
 
 
+def score(ax, value, size=6):
+    """Per-panel S-alpha, boxed so it stays readable on white or black predictions."""
+    ax.text(0.03, 0.05, f"{value:.3f}", transform=ax.transAxes, color="white", fontsize=size,
+            bbox=dict(facecolor="black", alpha=0.7, pad=1.0, linewidth=0))
+
+
 def show(ax, arr, title=None, cmap=None):
     ax.imshow(arr, cmap=cmap, vmin=0, vmax=1 if cmap else None, interpolation="bilinear")
+    ax.set_aspect("equal")
+    ax.set_anchor("C")
     ax.set_xticks([])
     ax.set_yticks([])
     for sp in ax.spines.values():
@@ -123,7 +131,7 @@ def teaser(ds, base_seed, quantile, log):
         for i, m in enumerate(TEASER_MODELS, start=1):
             p, sc = preds[(m, name, c, s)]
             show(axes[i, j], p, cmap="gray")
-            axes[i, j].text(0.02, 0.04, f"$S_\\alpha$={sc:.3f}", transform=axes[i, j].transAxes, color="yellow", fontsize=6)
+            score(axes[i, j], sc)
             log.append({"figure": "teaser", "image": name, "corruption": c, "severity": s, "model": m, "Sm": sc,
                         "rule": f"quantile {quantile} of Ours-512 minus SINet-V2 gain under {TEASER_CORRUPTION}"})
     for i, m in enumerate(TEASER_MODELS, start=1):
@@ -141,7 +149,10 @@ def grid(ds, base_seed, log):
     jobs = [(name, c, s) for c, s, name, _ in rows]
     cache, preds = run_models(GRID_MODELS, jobs, ds, base_seed)
     ncol = 2 + len(GRID_MODELS)
-    fig, axes = plt.subplots(len(rows), ncol, figsize=(7.16, 0.95 * len(rows) + 0.3))
+    # equal-sized panels (4:3 cells); portrait images are centred inside their cell, so rows line up
+    cell_w = 7.16 / ncol
+    fig, axes = plt.subplots(len(rows), ncol, figsize=(7.16, cell_w * 0.75 * len(rows) + 0.25),
+                             gridspec_kw=dict(wspace=0.04, hspace=0.06))
     for r, (c, s, name, kind) in enumerate(rows):
         img, gt = cache[(name, c, s)]
         show(axes[r, 0], img, "Input" if r == 0 else None)
@@ -150,10 +161,10 @@ def grid(ds, base_seed, log):
         for k, m in enumerate(GRID_MODELS, start=2):
             p, sc = preds[(m, name, c, s)]
             show(axes[r, k], p, display(m) if r == 0 else None, cmap="gray")
-            axes[r, k].text(0.03, 0.05, f"{sc:.3f}", transform=axes[r, k].transAxes, color="yellow", fontsize=5.5)
+            score(axes[r, k], sc, size=5.5)
             log.append({"figure": "grid", "image": name, "corruption": c, "severity": s, "model": m, "Sm": sc,
                         "rule": f"{kind} Ours-512 S-alpha for this condition"})
-    fig.tight_layout(pad=0.1, h_pad=0.15, w_pad=0.1)
+    fig.subplots_adjust(left=0.06, right=0.995, top=0.96, bottom=0.005)
     for ext in ("pdf", "png"):
         fig.savefig(REPO / "figures" / f"fig_qualitative.{ext}", bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
