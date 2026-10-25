@@ -690,3 +690,31 @@ SAM-Adapter finished: COD10K, CAMO and CHAMELEON, 41 conditions each. NC4K stays
 
 ### Next
 - Phase 8: paper draft (benchmark-first framing; Ours (1024) and Ours (512) as a trade-off pair); `refs.bib` with verified entries.
+
+---
+
+## Session 20 — 2026-10-25 (Claude, cloud container) — Phase 8 paper draft
+
+### Done
+- **`paper/main.tex`:** benchmark-first framing, with Ours (1024) and Ours (512) presented as a trade-off pair. Every number in the prose is a macro from `paper/tables/numbers.tex` (written by `scripts/make_tables.py`); tables are `\input` from `paper/tables/`.
+- **`paper/supplementary.tex`:** significance table, held-out per-corruption figure, robustness tables for NC4K/CAMO/CHAMELEON, per-corruption Dice retention, the full trade-off figure, all qualitative rows.
+- **`paper/refs.bib`:** 37 entries, each with a `% verified:` URL (35 cited; `dosovitskiy2021vit` and `hu2022lora` unused, so bibtex leaves them out).
+  - COD10K-C (arXiv:2606.02603) as confirmed from search: single author A. H. Sayem; SINet-v2, PFNet, ZoomNet + RobustCODLite; no SAM models; code "will be released"; Dice retention 87.7 / 84.8 / 84.1 %; blur hurts most.
+  - Not confirmed: its exact corruption list and severity parameters (see checklist).
+- **Build** (pdflatex → bibtex → pdflatex ×2): 0 errors, 0 undefined citations or references, 0 overfull boxes, all fonts embedded. Main paper: 7 pages; the text ends on page 5, references run from page 5 to page 7, and page 6 carries Fig. 6. Supplementary: 4 pages.
+- `paper/SUBMISSION_CHECKLIST.md`: student/advisor steps, plus dblp/Crossref check of references and COD10K-C §3.2 check.
+
+### Open
+- `figures/fig_qualitative_full.*` is a placeholder copy of the old grid until the laptop re-run.
+- Author block, venue, AI-use acknowledgment: student fills in.
+
+### Reproduce
+```
+python scripts/make_tables.py; python scripts/make_figures.py
+cd paper && latexmk -pdf main.tex && latexmk -pdf supplementary.tex
+```
+
+### Next
+- Student: `python scripts/make_qualitative.py --only grid`, push; read `paper/main.pdf` and `docs/EXPLAINER.md` (Checkpoint 8).
+- Phase 9: release (MIT licence, README, trained adapter checkpoints).
+- Student re-ran `make_qualitative.py --only grid` (final 5-row fig_qualitative and 7-row fig_qualitative_full); teaser rows restored in `results/qualitative_selection.csv`. `make_qualitative.py --only` now keeps the other figure's rows. PDFs rebuilt with the final figures.

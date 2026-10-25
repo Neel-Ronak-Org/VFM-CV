@@ -19,11 +19,14 @@ Work through this before submitting. Items marked **(you)** need the student or 
 - [x] Every number in `main.tex` and `supplementary.tex` comes from macros in `tables/numbers.tex` or from the generated tables. Regenerate them all with:
   `python scripts/summarize_benchmark.py; python scripts/significance.py; python scripts/make_tables.py; python scripts/make_figures.py`.
 - [x] `refs.bib`: every entry has a `% verified:` URL comment. Unverifiable references are not cited (see the agent report in PROGRESS.md).
+- [ ] Many entries were verified from GitHub READMEs, publisher pages or search-index snippets. Before submitting, check each one on dblp or Crossref (authors, venue, year, pages). `ravi2024sam2` and `xiong2024sam2unet` keep their old keys, but the entries carry the published years.
+- [ ] COD10K-C: check its exact 8 corruption types and severity parameters (its §3.2) against `configs/corruptions.yaml` and §III of `main.tex`. The search confirmed Gaussian blur and the Dice retention numbers; the full parameter list was not visible.
+- [ ] PySODMetrics asks users to cite a newer report (arXiv:2607.00886). It is not verified and not cited; add it if you can confirm it.
 - [ ] After any edit, rebuild and check the log for `undefined` citations or references and for overfull boxes.
 
 ## 4. Formatting (done; re-check after edits)
 - [x] IEEEtran `conference` class, two columns, 10 pt.
-- [x] Main text is 6 pages plus references in the current draft. Check against the venue's limit.
+- [x] 7 pages in total: the text ends and the references (35) begin in the second column of page 5; page 6 holds Fig. 6 (qualitative grid) above the references, which end on page 7. Check against the venue's limit (some count references, some do not).
 - [x] Figures are vector PDFs (plots) or 300 dpi (image grids), readable at column width, with a colour-blind-safe palette.
 - [ ] Re-run `python scripts/make_qualitative.py` on the laptop so that `fig_qualitative` (5 rows) and `fig_qualitative_full` use the final layout.
 - [ ] Check fonts are embedded (`pdffonts main.pdf`); IEEE PDF eXpress if the venue requires it.
