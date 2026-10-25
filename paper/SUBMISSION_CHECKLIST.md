@@ -26,7 +26,7 @@ Work through this before submitting. Items marked **(you)** need the student or 
 
 ## 4. Formatting (done; re-check after edits)
 - [x] IEEEtran `conference` class, two columns, 10 pt.
-- [x] Main text is 6 pages; references start on page 6 and end on page 7 (35 cited references). Check against the venue's limit.
+- [x] 7 pages in total: the text ends and the references (35) begin in the second column of page 5; page 6 holds Fig. 6 (qualitative grid) above the references, which end on page 7. Check against the venue's limit (some count references, some do not). Check against the venue's limit.
 - [x] Figures are vector PDFs (plots) or 300 dpi (image grids), readable at column width, with a colour-blind-safe palette.
 - [ ] Re-run `python scripts/make_qualitative.py` on the laptop so that `fig_qualitative` (5 rows) and `fig_qualitative_full` use the final layout.
 - [ ] Check fonts are embedded (`pdffonts main.pdf`); IEEE PDF eXpress if the venue requires it.
