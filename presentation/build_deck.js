@@ -1,10 +1,12 @@
 // Course presentation (CV mini project). Every number comes from presentation/numbers.json, written by
-// presentation/make_numbers.py from results/*.csv; images come from figures/ and presentation/screens/.
+// presentation/make_numbers.py from results/*.csv, except the per-image scores on the demo slides, which are
+// quoted from the app's own screenshots. Images come from figures/ and presentation/screens/.
 //
 //   python presentation/make_numbers.py
 //   node presentation/build_deck.js        # -> presentation/CV_mini_project_I015_I032.pptx
 //
-// Optional screenshots (added when present): presentation/screens/demo_input.png, demo_output.png;
+// Demo screenshots (each slide added when its files are present): presentation/screens/demo_input_{upload,controls}.png,
+// demo_output_rain.png (+ assets/demo_corrupted_crop.png), demo_output_gt_{spider,branch}.png;
 // intermediate outputs: figures/intermediates/<image>_<corruption><severity>/ from scripts/intermediates.py.
 const fs = require("fs");
 const path = require("path");
@@ -256,10 +258,15 @@ async function build() {
     { x: rx, y: 5.45, w: rw, h: 0.8, fontSize: 14, italic: true, color: C.accent6, margin: 0, valign: "top", isTextBox: true, objectName: "severity note" });
   s.addNotes("Each test image is evaluated clean and under 8 corruptions at 5 severities: 41 versions per image. Four corruptions are used during training (seen); the other four, including rain, are never seen in training, which tests real generalisation rather than memorised augmentation.");
 
-  if (exists(screen("demo_input.png"))) {
+  if (exists(screen("demo_input_upload.png")) && exists(screen("demo_input_controls.png"))) {
     s = contentSlide("Inputs in the demo app", "Results");
-    await fitImage(s, screen("demo_input.png"), M, 1.3, CW, 5.5, { name: "demo input screenshot", alt: "Gradio demo: image upload, model choice, corruption and severity controls" });
-    s.addNotes("The demo takes any uploaded photo or a test image, lets the user choose a corruption and a severity, and the models to compare.");
+    const u = await fitImage(s, screen("demo_input_upload.png"), M, 1.4, 7.95, 3.6, { align: "left", name: "demo upload screenshot", alt: "Gradio demo: photo upload and gallery of test images" });
+    const k = await fitImage(s, screen("demo_input_controls.png"), u.x + u.w + 0.3, 1.4, W - M - (u.x + u.w + 0.3), 3.6, { align: "left", name: "demo controls screenshot", alt: "Gradio demo: model choice, corruption and severity controls" });
+    s.addText("Upload any photo, or pick one of 12 test images (COD10K, CAMO, CHAMELEON) or a photo from demo/my_photos.",
+      { x: u.x, y: 5.2, w: u.w, h: 0.9, fontSize: 15, color: C.text2, margin: 0, valign: "top", isTextBox: true, objectName: "demo upload caption" });
+    s.addText("Tick up to 6 models, choose a corruption (UNSEEN ones were never used in training) and a severity from 0 to 5.",
+      { x: k.x, y: 5.2, w: W - M - k.x, h: 0.9, fontSize: 15, color: C.text2, margin: 0, valign: "top", isTextBox: true, objectName: "demo controls caption" });
+    s.addNotes("Run with: python demo/app.py. Left: the photo input and the test-image gallery (the pineapple photo is a CAMO test image). Right: the controls. Every model runs on the same corrupted image, so the comparison is fair.");
   }
 
   // 8 ------------------------------------------------------------ intermediate outputs
@@ -267,7 +274,9 @@ async function build() {
   const interDir = path.join(REPO, "figures", "intermediates");
   const inter = exists(interDir) ? fs.readdirSync(interDir).filter((d) => exists(path.join(interDir, d, "panel.png"))).sort() : [];
   if (inter.length) {
-    await fitImage(s, path.join(interDir, inter[0], "panel.png"), M, 1.3, CW, 5.55, { name: "intermediate panel", alt: "Eight stages from input to detection" });
+    const ip = await fitImage(s, path.join(interDir, inter[0], "panel.png"), M, 1.25, CW, 5.2, { name: "intermediate panel", alt: "Eight stages from input to detection" });
+    s.addText("Ours (512) on the slide-10 katydid under motion blur, severity 4 (unseen in training). Stages 3–5 are inside the network; sizes are height × width.",
+      { x: M, y: ip.y + ip.h + 0.08, w: CW, h: 0.4, fontSize: 12, color: C.accent6, margin: 0, isTextBox: true, objectName: "intermediate caption" });
   } else {
     card(s, M, 1.4, CW, 5.3, "intermediate placeholder", C.background2);
     s.addText("Run on the laptop:  python scripts/intermediates.py\nthen rebuild the deck (figures/intermediates/…/panel.png is picked up automatically).",
@@ -298,10 +307,35 @@ async function build() {
     { x: tx + 0.25, y: 5.05, w: tw - 0.5, h: 1.35, fontSize: 14, italic: true, color: C.text2, margin: 0, valign: "middle", isTextBox: true, objectName: "teaser note" });
   s.addNotes("Top row: input; middle: SINet-V2; bottom: our 512-pixel model. Our model's score drops as blur grows, but it keeps far more of the object than SINet-V2. Say clearly that this example was picked by a rule and is better than average.");
 
-  if (exists(screen("demo_output.png"))) {
-    s = contentSlide("Outputs in the demo app", "Results");
-    await fitImage(s, screen("demo_output.png"), M, 1.3, CW, 5.5, { name: "demo output screenshot", alt: "Gradio demo: side-by-side overlays with latency" });
-    s.addNotes("Each selected model's mask is drawn as a coloured overlay with its latency; with a test image, the ground truth and per-image scores are shown too.");
+  if (exists(screen("demo_output_rain.png"))) {
+    s = contentSlide("Outputs in the demo app: rain, severity 4", "Results");
+    const crop = path.join(__dirname, "assets", "demo_corrupted_crop.png");
+    const ci0 = await fitImage(s, crop, M, 1.35, 4.5, 4.6, { align: "left", name: "demo corrupted input", alt: "Pineapple photo with rain at severity 4, as fed to every model" });
+    s.addText("Input after the corruption (rain is unseen in training)", { x: ci0.x, y: ci0.y + ci0.h + 0.08, w: ci0.w, h: 0.6, fontSize: 12, color: C.accent6, margin: 0, valign: "top", isTextBox: true, objectName: "demo input label" });
+    const ox = ci0.x + ci0.w + 0.35;
+    const o = await fitImage(s, screen("demo_output_rain.png"), ox, 1.35, W - M - ox, 3.2, { align: "left", name: "demo rain outputs", alt: "SINet-V2, SAM2-UNet and Ours-Full overlays with latency" });
+    s.addText([
+      { text: "A CAMO test image: a face painted to look like a pineapple.", options: { bullet: true, breakLine: true } },
+      { text: "SINet-V2 marks almost every pineapple; SAM2-UNet and Ours-Full pick out the painted face.", options: { bullet: true, breakLine: true } },
+      { text: "Latency shown by the app: SINet-V2 114 ms, SAM2-UNet 166 ms, Ours-Full 51 ms. It includes pre- and post-processing, so it is higher than the benchmark timing.", options: { bullet: true } },
+    ], { x: ox, y: o.y + o.h + 0.25, w: W - M - ox, h: 6.7 - (o.y + o.h + 0.25), fontSize: 15, color: C.text2, margin: 0, valign: "top", paraSpaceAfter: 6, isTextBox: true, objectName: "demo rain text" });
+    s.addNotes("Each selected model's mask is drawn as a coloured overlay on the corrupted image, with its latency underneath.");
+  }
+
+  if (exists(screen("demo_output_gt_spider.png")) && exists(screen("demo_output_gt_branch.png"))) {
+    s = contentSlide("Outputs in the demo app, with ground truth", "Results");
+    const a = await fitImage(s, screen("demo_output_gt_spider.png"), M, 1.3, 6.4, 2.75, { align: "left", name: "demo spider", alt: "Spider under rain: SINet-V2, SAM2-UNet and Ours-Full with per-image scores" });
+    const b = await fitImage(s, screen("demo_output_gt_branch.png"), M, a.y + a.h + 0.2, 6.4, 2.75, { align: "left", name: "demo branch", alt: "Animal on a branch under rain: three models with per-image scores" });
+    const gx2 = Math.max(a.x + a.w, b.x + b.w) + 0.45, gw2 = W - M - gx2;
+    card(s, gx2, 1.3, gw2, 2.55, "demo spider card");
+    s.addText([{ text: "Top: a spider in dry grass", options: { bold: true, color: HEX.dk1, breakLine: true } },
+      { text: "Ours-Full scores highest on this image (S-measure 0.851, against 0.790 for SAM2-UNet and 0.683 for SINet-V2)." }],
+    { x: gx2 + 0.25, y: 1.45, w: gw2 - 0.5, h: 2.25, fontSize: 17, color: C.text2, margin: 0, valign: "top", isTextBox: true, objectName: "demo spider text" });
+    card(s, gx2, 4.05, gw2, 2.55, "demo branch card");
+    s.addText([{ text: "Bottom: an animal on a branch", options: { bold: true, color: HEX.dk1, breakLine: true } },
+      { text: "Here SINet-V2 is best (0.878; Ours-Full 0.803, SAM2-UNet 0.759). Single images go either way; the benchmark averages thousands." }],
+    { x: gx2 + 0.25, y: 4.2, w: gw2 - 0.5, h: 2.25, fontSize: 17, color: C.text2, margin: 0, valign: "top", isTextBox: true, objectName: "demo branch text" });
+    s.addNotes("With 'Show ground truth' ticked for a test image, the app draws the ground truth in white and prints each model's per-image S-measure and MAE. Scores on this slide are the ones printed by the app. We show one image where our model wins and one where it does not, to be honest about single examples.");
   }
 
   // 11 ----------------------------------------------------------- performance: accuracy

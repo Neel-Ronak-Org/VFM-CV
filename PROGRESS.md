@@ -738,3 +738,4 @@ cd paper && latexmk -pdf main.tex && latexmk -pdf supplementary.tex
 python presentation/make_numbers.py
 cd presentation && npm install && node build_deck.js
 ```
+- Student ran `scripts/intermediates.py` (Ours (512), katydid, motion blur 4: S-alpha 0.758, matching the teaser) and took 6 demo screenshots (renamed to `presentation/screens/demo_*.png`). Deck rebuilt: 18 slides, now with demo input, intermediate-output and two demo-output slides. Per-image scores on the demo slides are quoted from the app's screenshots.
