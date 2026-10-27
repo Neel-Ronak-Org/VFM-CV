@@ -718,3 +718,23 @@ cd paper && latexmk -pdf main.tex && latexmk -pdf supplementary.tex
 - Student: `python scripts/make_qualitative.py --only grid`, push; read `paper/main.pdf` and `docs/EXPLAINER.md` (Checkpoint 8).
 - Phase 9: release (MIT licence, README, trained adapter checkpoints).
 - Student re-ran `make_qualitative.py --only grid` (final 5-row fig_qualitative and 7-row fig_qualitative_full); teaser rows restored in `results/qualitative_selection.csv`. `make_qualitative.py --only` now keeps the other figure's rows. PDFs rebuilt with the final figures.
+
+---
+
+## Session 21 — 2026-10-27 (Claude, cloud container) — course presentation
+
+### Done
+- `presentation/CV_mini_project_I015_I032.pptx` (15 slides): title, problem, pipeline, models and algorithms, architecture, roles, inputs, intermediate outputs, outputs (grid + teaser), performance (accuracy, efficiency, four datasets), contribution, summary. Speaker notes on every slide.
+- Numbers come only from `results/*.csv` via `presentation/make_numbers.py` → `presentation/numbers.json`; `presentation/build_deck.js` reads that file and `figures/`.
+- `scripts/intermediates.py`: saves our model's internal stages for one image (corrupted input, network input, encoder embedding as PCA colours, low-res decoder output, final map, overlay, GT) to `figures/intermediates/<image>_<corruption><severity>/`. Smoke-tested in the container with untrained weights (no data or trained checkpoint here).
+
+### Open
+- Slide 8 (intermediate outputs) shows a "run the script" box until `python scripts/intermediates.py` is run on the laptop and the deck rebuilt.
+- Optional demo screenshots: `presentation/screens/demo_input.png` and `demo_output.png` add one slide each.
+- Course name on the title slide is "Computer Vision · Mini Project" (`COURSE` in build_deck.js): confirm.
+
+### Reproduce
+```
+python presentation/make_numbers.py
+cd presentation && npm install && node build_deck.js
+```
