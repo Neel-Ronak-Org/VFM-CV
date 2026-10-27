@@ -731,7 +731,7 @@ cd paper && latexmk -pdf main.tex && latexmk -pdf supplementary.tex
 ### Open
 - Slide 8 (intermediate outputs) shows a "run the script" box until `python scripts/intermediates.py` is run on the laptop and the deck rebuilt.
 - Optional demo screenshots: `presentation/screens/demo_input.png` and `demo_output.png` add one slide each.
-- Course name on the title slide is "Computer Vision · Mini Project" (`COURSE` in build_deck.js): confirm.
+- Course name confirmed by the student: "Computer Vision" (title slide).
 
 ### Reproduce
 ```

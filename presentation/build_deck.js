@@ -24,7 +24,7 @@ const fig = (f) => path.join(REPO, "figures", f);
 const screen = (f) => path.join(__dirname, "screens", f);
 const exists = (p) => fs.existsSync(p);
 
-const COURSE = "Computer Vision · Mini Project";
+const COURSE = "Computer Vision";
 const MEMBERS = [["Ronak Daniel", "I015"], ["Neel Jaiswal", "I032"]];
 const FOOTER = "CV Mini Project · Ronak Daniel (I015) · Neel Jaiswal (I032)";
 
@@ -118,7 +118,7 @@ async function build() {
   // 1 ------------------------------------------------------------ title
   pres.addSection({ title: "Introduction" });
   let s = pres.addSlide({ masterName: "TITLE_DARK", sectionTitle: "Introduction" });
-  s.addText(COURSE.toUpperCase(), { x: M, y: 1.3, w: 7, h: 0.4, fontSize: 14, bold: true, charSpacing: 2, color: C.accent3, margin: 0, isTextBox: true, objectName: "course" });
+  s.addText(("Course: " + COURSE).toUpperCase(), { x: M, y: 1.3, w: 7, h: 0.4, fontSize: 14, bold: true, charSpacing: 2, color: C.accent3, margin: 0, isTextBox: true, objectName: "course" });
   s.addText("Robust Camouflaged Object Detection on a Laptop GPU", { placeholder: "title" });
   s.addText("A corruption benchmark of specialist and SAM-based detectors, and a lightweight robust SAM adapter",
     { x: M, y: 3.95, w: 6.8, h: 0.9, fontSize: 18, color: C.background2, margin: 0, valign: "top", isTextBox: true, objectName: "subtitle" });
