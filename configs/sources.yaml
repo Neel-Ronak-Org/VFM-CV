@@ -70,9 +70,9 @@ weights:
   feder:
     source: https://github.com/ChunmingHe/FEDER   # README §4 "well-trained model" (the only official copy)
     gdrive_id: 1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc
-    manual: "https://drive.google.com/file/d/1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc/view (if dead: FEDER becomes 'clean only' from its released maps, CLAUDE.md §6)"
+    manual: "https://drive.google.com/file/d/1MONpM9auqGlRoyaOKUe6wJgLZ-E6A4Dc/view (if dead: FEDER becomes 'clean only', scored from its released maps)"
     dest: checkpoints/feder/FEDER.pth
-    note: "2026-10-14: student reports the Drive link does not work. No mirror found. Do NOT use 1OmE2vE... (README §3): that is the training-init backbone, not the trained model."
+    note: "2026-10-14: the Drive link does not work. No mirror found. Do NOT use 1OmE2vE... (README §3): that is the training-init backbone, not the trained model."
   sam_adapter:
     source: https://github.com/tianrun-chen/SAM-Adapter-PyTorch
     gdrive_id: 13JilJT7dhxwMIgcdtnvdzr08vcbREFlR
@@ -90,7 +90,7 @@ weights:
     url: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt
     dest: checkpoints/mobile_sam/mobile_sam.pt
   efficient_sam_vitt:
-    optional: true   # Phase 4 fallback backbone only
+    optional: true   # fallback backbone only (not used)
     source: https://github.com/yformer/EfficientSAM
     url: https://raw.githubusercontent.com/yformer/EfficientSAM/main/weights/efficient_sam_vitt.pt   # direct (github.com/raw redirects); verified to serve the real file
     dest: checkpoints/efficient_sam/efficient_sam_vitt.pt

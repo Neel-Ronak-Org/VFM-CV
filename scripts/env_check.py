@@ -1,7 +1,6 @@
-"""Print the environment facts that PROGRESS.md needs (OS, Python, CUDA, real VRAM).
+"""Print the environment facts behind our timings (OS, Python, CUDA, GPU and its real VRAM).
 
     python scripts/env_check.py
-Paste the output into PROGRESS.md (or send it back to Claude).
 """
 import platform
 import shutil

@@ -11,15 +11,15 @@ We **never redistribute** any dataset. Users download from the official links (`
 
 **Packaging:** the training set (COD10K-train + CAMO-train = 4,040) and the test sets come from the ready-made packages linked in the SINet-V2 README (https://github.com/GewelsJI/SINet-V2). The packages only repackage the original datasets, so the original licences above apply.
 
-**Code licences that matter for release (Phase 9):**
+**Code licences:**
 - SINet-V2 repo has an Apache-2.0 `LICENSE` file, but its README says "free for research and education use only; any commercial usage should get formal permission first". Vendored SINet-V2 network code keeps its own header and licence notice; our MIT licence applies to our own code only.
 - Vendored baseline code (each folder in `src/models/third_party/` keeps its LICENSE):
   SAM2-UNet Apache-2.0 · ZoomNet MIT · PFNet BSD-style (copyright notice retained) · FEDER MIT ·
   SAM-Adapter MIT (SAM parts Apache-2.0) · MobileSAM Apache-2.0.
 
-**Consequence for the paper:** state that all datasets are used for non-commercial academic research under their authors' terms.
+**Use:** all datasets are used for non-commercial academic research under their authors' terms.
 
-## Citations (BibTeX goes in `paper/refs.bib` in Phase 8, each entry verified)
+## Citations
 
 - COD10K / SINet: D.-P. Fan, G.-P. Ji, G. Sun, M.-M. Cheng, J. Shen, L. Shao. *Camouflaged Object Detection.* CVPR 2020.
 - COD10K / SINet-V2: D.-P. Fan, G.-P. Ji, M.-M. Cheng, L. Shao. *Concealed Object Detection.* IEEE TPAMI 2022.

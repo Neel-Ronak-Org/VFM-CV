@@ -23,14 +23,10 @@ results/logs/*.out
 demo/my_photos/*
 !demo/my_photos/.gitkeep
 
-# LaTeX build
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.bbl
-paper/*.blg
-paper/*.fls
-paper/*.fdb_latexmk
-paper/*.synctex.gz
-presentation/node_modules/
-presentation/package-lock.json
+# Not part of the public code release (paper, slides, working notes): kept outside the repository
+paper/
+presentation/
+project_materials/
+CLAUDE.md
+PROGRESS.md
+figures/intermediates/

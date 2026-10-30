@@ -2,9 +2,9 @@
 #
 # The 8 core corruptions and their 5 severity parameters follow COD10K-C
 # (Sayem, arXiv:2606.02603, Sec. 3), so our numbers are comparable with theirs.
-# Text of Sec. 3 was supplied by the student on 2026-10-13. Exact implementation details
+# Exact implementation details
 # that the paper does not state (library, clipping, rain) are OUR assumptions and are
-# listed in docs/EXPLAINER.md §2 "Assumptions".
+# listed in docs/BENCHMARK.md.
 
 severities: [1, 2, 3, 4, 5]
 base_seed: 20261013

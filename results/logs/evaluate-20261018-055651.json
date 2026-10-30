@@ -24,6 +24,6 @@
     "max_hours": 2.5186
   },
   "stopped_early": true,
-  "out": "C:\\Users\\Ronak Daniel\\VFM-CV\\results\\benchmark.csv",
+  "out": "results\\benchmark.csv",
   "seconds": 9206.1
 }

@@ -1,6 +1,6 @@
 # Clean-image numbers reported by each baseline's paper, used by scripts/make_reproduction.py.
 # Only values confirmed against a citable source go here; each entry records where it came from.
-# Reproduction criterion (CLAUDE.md, Phase 2): |S-alpha ours - reported| <= 0.015.
+# Reproduction criterion: |S-alpha ours - reported| <= 0.015.
 tolerance_Sm: 0.015
 
 SINet-V2:

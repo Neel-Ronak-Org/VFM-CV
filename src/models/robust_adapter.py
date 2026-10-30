@@ -3,7 +3,7 @@
 Backbone: MobileSAM (Zhang et al., arXiv:2306.14289), https://github.com/ChaoningZhang/MobileSAM
           (commit f706ad9, Apache-2.0), vendored in third_party/mobile_sam/. Its weights
           checkpoints/mobile_sam/mobile_sam.pt are loaded strictly and the image encoder stays FROZEN.
-Design:   (see docs/EXPLAINER.md section 9)
+Design:   (see docs/MODEL.md)
   - Frozen TinyViT image encoder (6.07M params). BatchNorm stays in eval mode.
   - Trainable adapters inside the encoder's 10 transformer blocks (stages 1-3), zero-initialised so
     training starts from exactly the pretrained encoder:

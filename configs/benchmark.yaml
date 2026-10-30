@@ -1,4 +1,4 @@
-# Phase 3 corruption benchmark plan (decided 2026-10-16, see PROGRESS.md Session 8).
+# Corruption benchmark plan.
 # Run with: python scripts/run_benchmark.py            (resumable; --status shows what's left + ETA)
 # Stages run in order; inside a stage, datasets in the listed order (COD10K first = the paper's main table).
 corruptions: all          # the 8 COD10K-C corruptions x 5 severities (+ clean)

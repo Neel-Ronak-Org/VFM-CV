@@ -1,20 +1,23 @@
 """Paper tables as LaTeX, generated ONLY from results files (never typed by hand).
 
     python scripts/significance.py     # first: results/significance.csv (used by Table 5)
-    python scripts/make_tables.py      # -> paper/tables/*.tex
+    python scripts/make_tables.py                    # -> results/tables/*.tex
+    python scripts/make_tables.py --out paper/tables # write straight into a LaTeX project instead
 
-Tables (each a complete table environment; the paper \\input{}s them; needs booktabs):
+Files (each table is a complete table environment for \\input{}; needs booktabs):
   table1_clean.tex          clean S-alpha / E-phi / F-beta^w / MAE on the four test sets
   table2_robust_<DS>.tex    robustness on one dataset (COD10K is Table 2 in the paper; others for the appendix)
   table3_ablation.tex       training components (COD10K) and epochs / input resolution (CHAMELEON)
   table4_efficiency.tex     parameters, GFLOPs, latency, FPS, memory, training time
   table5_significance.tex   paired bootstrap 95 % CIs of the S-alpha difference under corruption
   table6_percorruption.tex  Dice retention per corruption on COD10K
+  numbers.tex               one LaTeX macro for every number the paper's text quotes
 Best value per column (excluding the oracle) is bold. Ours (512) is mean +- sample std over the seeds that
 are complete for that dataset (SEED_GROUPS in src/reporting.py); the caption says how many.
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -27,7 +30,7 @@ from src.reporting import (DATASETS, MAIN_MODELS, MODELS, RESULTS, SEED_GROUPS, 
                            clean_scores, display, efficiency, load_bench, load_released, robustness,
                            training_hours)
 
-OUT = REPO / "paper" / "tables"
+OUT = RESULTS / "tables"
 ORACLE = "Oracle-Box-MobileSAM"
 DASH = "--"
 
@@ -60,10 +63,10 @@ def res_tex(model: str) -> str:
     return MODELS[model][2].replace("*", "$^*$")
 
 
-def write(name: str, text: str) -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / name).write_text(text)
-    print(f"wrote {(OUT / name).relative_to(REPO)}")
+def write(name: str, text: str, out: Path = OUT) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    (out / name).write_text(text)
+    print(f"wrote {out / name}")
 
 
 # ------------------------------------------------------------------------------------------- Table 1
@@ -359,21 +362,24 @@ def numbers(bench, released, protocol) -> str:
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", type=Path, default=OUT, help="output folder (default: results/tables)")
+    out = ap.parse_args().out
     bench, released, protocol = load_bench(), load_released(), load_protocol()
-    write("table1_clean.tex", table1(bench, released))
+    write("table1_clean.tex", table1(bench, released), out)
     for ds in DATASETS:
         t = table2(bench, ds, protocol)
         if t:
-            write(f"table2_robust_{ds}.tex", t)
-    write("table3_ablation.tex", table3(bench, protocol))
-    write("table4_efficiency.tex", table4())
+            write(f"table2_robust_{ds}.tex", t, out)
+    write("table3_ablation.tex", table3(bench, protocol), out)
+    write("table4_efficiency.tex", table4(), out)
     t5 = table5()
     if t5:
-        write("table5_significance.tex", t5)
+        write("table5_significance.tex", t5, out)
     else:
         print("skipped table5: run scripts/significance.py first")
-    write("table6_percorruption.tex", table6(bench, protocol))
-    write("numbers.tex", numbers(bench, released, protocol))
+    write("table6_percorruption.tex", table6(bench, protocol), out)
+    write("numbers.tex", numbers(bench, released, protocol), out)
 
 
 if __name__ == "__main__":

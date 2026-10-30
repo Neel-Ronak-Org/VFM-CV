@@ -1,7 +1,7 @@
 """Score a folder of prediction maps (PNG) against the ground truth with our metrics code.
 
 Used for (a) checking a ported baseline against its officially released maps and
-(b) the "clean only" fallback for baselines that cannot be ported (CLAUDE.md §6).
+(b) the "clean only" fallback for baselines that cannot be ported.
 
     python scripts/eval_prediction_maps.py --model SINet-V2 --pred-root data/released_maps/SINet-V2
 Searches <pred-root> recursively for a folder per dataset (CHAMELEON, CAMO, COD10K, NC4K) and
