@@ -103,10 +103,9 @@ def table1(bench, released) -> str:
                                  bold=m in bold[(ds, key)]))
         name = display(m) + ("$^\\dagger$" if m == "FEDER" else "$^\\ddagger$" if m == ORACLE else "")
         body.append(f"{name} & " + " & ".join(cells) + " \\\\")
-    cap = ("Clean-image results on the four COD test sets. Best per column in bold (oracle excluded). "
-           "$^\\dagger$FEDER: scored from the authors' released prediction maps (no COD10K maps released; "
-           "trained on COD10K-train only). $^\\ddagger$Oracle: MobileSAM prompted with the ground-truth box, an "
-           "analysis probe, not a competitor." + seeds_note(counts))
+    cap = ("Clean results on the four test sets; best per column in bold (oracle excluded). $^\\dagger$FEDER: "
+           "from its released prediction maps (none for COD10K). $^\\ddagger$MobileSAM with the ground-truth box, "
+           "an analysis probe." + seeds_note(counts))
     return ("\\begin{table*}[t]\n\\centering\n\\caption{" + cap + "}\n\\label{tab:clean}\n\\footnotesize\n"
             "\\setlength{\\tabcolsep}{2.1pt}\n\\begin{tabular}{" + cols + "}\n\\toprule\n" + head1 + "\n" + cmid
             + "\n" + head2 + "\n\\midrule\n" + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
@@ -137,12 +136,10 @@ def table2(bench, dataset, protocol) -> str | None:
         name = display(m) + ("$^\\ddagger$" if m == ORACLE else "")
         body.append(f"{name} & {res_tex(m)} & " + " & ".join(cells) + " \\\\")
     head = "Model & Input & " + " & ".join(lbl for _, lbl, _ in cols) + " \\\\"
-    cap = (f"Robustness on {dataset} (8 corruptions $\\times$ 5 severities). Clean and mCorr: $S_\\alpha$; "
-           "Ret.: mCorr/clean ($S_\\alpha$ unless marked); Seen/Unseen: retention on the corruptions used / never "
-           "used to train our models; Local: noise, blur, JPEG, rain; Global: brightness, contrast, fog; mCE: "
-           "corruption error relative to SINet-V2. Input: side length in px (ZoomNet$^*$ also uses 0.5$\\times$ "
-           "and 1.5$\\times$). $^\\ddagger$Oracle with the ground-truth box, not a competitor. Retention alone can favour weaker models; read it with mCorr and mCE."
-           + seeds_note(counts))
+    cap = (f"Robustness on {dataset} ($S_\\alpha$, 8 corruptions $\\times$ 5 severities). Ret.: mCorr/clean; "
+           "Seen, Unseen, Local, Global: retention on that group; mCE: error relative to SINet-V2. Input: side in "
+           "px (ZoomNet$^*$ also 0.5$\\times$, 1.5$\\times$). $^\\ddagger$Ground-truth-box probe. Read retention "
+           "with mCorr." + seeds_note(counts))
     label = "tab:robust" if dataset == "COD10K" else f"tab:robust-{dataset.lower()}"
     return ("\\begin{table*}[t]\n\\centering\n\\caption{" + cap + "}\n\\label{" + label + "}\n\\footnotesize\n"
             "\\setlength{\\tabcolsep}{4pt}\n\\begin{tabular}{llccccccccc}\n\\toprule\n" + head + "\n\\midrule\n" + "\n".join(body)
@@ -175,9 +172,9 @@ def table3(bench, protocol) -> str:
             body.append(f"\\quad {label} & " + " & ".join(cells) + " \\\\")
         body.append("\\midrule")
     body = body[:-1]
-    cap = ("Ablations. All columns are $S_\\alpha$: clean, and mean under corruption (mCorr) over all, seen, unseen, "
-           "local and global corruptions. Test-time views shrink the input of the 1024-px model before inference; "
-           "``trained at 512 px'' learns at that resolution. Best per block in bold." + seeds_note(counts))
+    cap = ("Ablations ($S_\\alpha$: clean, and mCorr over all, seen, unseen, local and global corruptions). "
+           "Test-time views shrink the input of the 1024-px model; ``trained at 512 px'' learns at that size. "
+           "Best per block in bold." + seeds_note(counts))
     head = "Variant & " + " & ".join(lbl for _, lbl in cols) + " \\\\"
     return ("\\begin{table}[t]\n\\centering\n\\caption{" + cap + "}\n\\label{tab:ablation}\n\\footnotesize\n"
             "\\setlength{\\tabcolsep}{2.5pt}\n\\resizebox{\\columnwidth}{!}{%\n\\begin{tabular}{lcccccc}\n\\toprule\n"
@@ -200,8 +197,8 @@ def table4() -> str:
         body.append(f"{display(m)} & {res_tex(m)} & {r['precision']} & " + " & ".join(cells)
                     + f" & {fmt(th, digits=1) if th else DASH} \\\\")
     gpu = eff["gpu_name"].dropna().iloc[0] if "gpu_name" in eff and len(eff) else "GPU"
-    cap = (f"Efficiency on one {gpu} (4 GB), batch 1, end-to-end on a 768$\\times$1024 image (median over runs). "
-           "Precision as in each model's official inference. Training: our full training run on the same laptop GPU.")
+    cap = (f"Efficiency on one {gpu} (4 GB): batch 1, 768$\\times$1024 image, median end-to-end latency, "
+           "official precision. Train: our training time on the same GPU.")
     head = "Model & Input & Prec. & " + " & ".join(lbl for _, lbl, _, _ in cols) + " & Train (h) \\\\"
     return ("\\begin{table}[t]\n\\centering\n\\caption{" + cap + "}\n\\label{tab:efficiency}\n\\footnotesize\n"
             "\\setlength{\\tabcolsep}{2.5pt}\n\\resizebox{\\columnwidth}{!}{%\n\\begin{tabular}{lllcccccc}\n\\toprule\n"

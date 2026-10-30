@@ -104,12 +104,13 @@ def main():
     tile_w = width / cols
     fig, axes = plt.subplots(rows, cols, figsize=(width, rows * (tile_w * h / w + (0.32 if rows == 1 else 0.2))),
                              squeeze=False)
-    for ax, (c, img) in zip(axes.flat, panels):
+    for i, (ax, (c, img)) in enumerate(zip(axes.flat, panels)):
         ax.imshow(img)
         ax.set_xticks([])
         ax.set_yticks([])
         tag = "" if c == "Clean" else ("seen" if c in protocol["seen"] else "unseen")
-        title = NAMES.get(c, c) + (f"\n({tag})" if rows == 1 and tag else f" ({tag})" if tag else ("\n" if rows == 1 else ""))
+        name = NAMES.get(c, c) if c == "Clean" else f"{i}. {NAMES.get(c, c)}"  # numbered as in the paper's list
+        title = name + (f"\n({tag})" if rows == 1 and tag else f" ({tag})" if tag else ("\n" if rows == 1 else ""))
         ax.set_title(title, fontsize=6.5 if rows == 1 else 7, pad=2, linespacing=1.0)
         for s in ax.spines.values():
             s.set_linewidth(0.4)
