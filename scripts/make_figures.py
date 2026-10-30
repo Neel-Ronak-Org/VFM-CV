@@ -4,7 +4,8 @@
     python scripts/make_figures.py     # -> figures/fig_*.pdf and .png
 
   fig_architecture   our model (drawn; parameter counts are the measured ones from Table 4 / the code)
-  fig_severity       S-alpha vs severity for each corruption on COD10K (paper Fig. 3)
+  fig_severity       S-alpha vs severity for each corruption on COD10K (paper Fig. 3); the severity-5 scores
+                     of SAM2-UNet, Ours (512) and SINet-V2 are printed at the end of their curves
   fig_tradeoff       accuracy under corruption and retention vs latency on COD10K (supplementary);
                      fig_tradeoff_main = panel (a) at column width (paper Fig. 4)
   fig_resolution     retention under local vs global corruptions, ordered by input resolution
@@ -83,11 +84,27 @@ def curve(bench, model, dataset, corruption, n_cond) -> np.ndarray | None:
 
 
 # --------------------------------------------------------------------------------------- figures
+HIGHLIGHT = ["SAM2-UNet", "Ours-Full-512", "SINet-V2"]  # models whose severity-5 score is printed in Fig. 3
+
+
+def spread(values: list[float], gap: float) -> list[float]:
+    """Label y positions: same order as `values`, at least `gap` apart, centred on the originals."""
+    order = np.argsort(values)
+    ys = np.array(values, float)[order]
+    for i in range(1, len(ys)):
+        ys[i] = max(ys[i], ys[i - 1] + gap)
+    ys -= (ys.mean() - np.mean(values))
+    out = np.empty_like(ys)
+    out[order] = ys
+    return list(out)
+
+
 def fig_severity(bench, protocol, dataset="COD10K"):
     n_cond = len(protocol["corruptions"]) * len(protocol["severities"]) + 1
     corrs = protocol["seen"] + protocol["unseen"]
-    fig, axes = plt.subplots(2, 4, figsize=(COL2, 2.9), sharex=True, sharey=True)
+    fig, axes = plt.subplots(2, 4, figsize=(COL2, 3.0), sharex=True, sharey=True)
     for ax, c in zip(axes.flat, corrs):
+        ends = {}
         for m in BENCH_MODELS:
             y = curve(bench, m, dataset, c, n_cond)
             if y is None:
@@ -95,8 +112,16 @@ def fig_severity(bench, protocol, dataset="COD10K"):
             st = STYLE[m]
             ax.plot(range(6), y, color=st["color"], ls=st["ls"], marker=st["marker"], ms=3.2, lw=st.get("lw", 1.1),
                     label=display(m))
+            if m in HIGHLIGHT:
+                ends[m] = y[-1]
         ax.set_title(f"{NAMES[c]} ({'seen' if c in protocol['seen'] else 'unseen'})")
         ax.set_xticks(range(6), ["0", "1", "2", "3", "4", "5"])
+        ax.set_xlim(-0.3, 6.6)
+        names = list(ends)
+        for m, yl in zip(names, spread([ends[m] for m in names], gap=0.017)):
+            ax.annotate(f"{ends[m]:.3f}", (5, ends[m]), xytext=(5.25, yl), textcoords="data", fontsize=5.8,
+                        color=STYLE[m]["color"], fontweight="bold", va="center", ha="left",
+                        arrowprops=dict(arrowstyle="-", color=STYLE[m]["color"], lw=0.5, shrinkA=0, shrinkB=1))
     for ax in axes[1]:
         ax.set_xlabel("Severity (0 = clean)")
     for ax in axes[:, 0]:
