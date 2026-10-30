@@ -61,6 +61,7 @@ python scripts/summarize_benchmark.py   # results/summary_robustness.csv: mCorr,
 python scripts/significance.py          # results/significance.csv: paired bootstrap 95% CIs
 python scripts/make_tables.py           # results/tables/*.tex (LaTeX tables + numbers.tex macros)
 python scripts/make_figures.py          # figures/fig_{architecture,severity,tradeoff,resolution,heldout}
+python scripts/make_corruption_examples.py   # figures/fig_corruptions: one test image under each corruption
 python scripts/make_qualitative.py      # figures/fig_teaser, fig_qualitative (runs the models)
 python scripts/resolution_test.py       # input-resolution analysis -> results/resolution_test_<ds>.csv
 ```
