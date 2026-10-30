@@ -4,6 +4,7 @@
     python scripts/make_corruption_examples.py --severity 3 --crop 0.1 0.2 0.9 0.8
     python scripts/make_corruption_examples.py --image path/to/photo.jpg
     python scripts/make_corruption_examples.py --from-preview       # no data: tiles of figures/corruption_preview.jpg
+    python scripts/make_corruption_examples.py --rows 3             # 3x3 grid at column width instead of one row
 
 Corruptions use the benchmark's own code and per-image seeds (src/corruptions.py), so each panel is exactly what
 the models were evaluated on. --crop (fractions x0 y0 x1 y1) zooms into the image so that noise, JPEG blocks and
@@ -31,7 +32,7 @@ DEFAULT_IMAGE = "COD10K-CAM-3-Flying-61-Katydid-4063"  # the teaser image (Fig. 
 DEFAULT_CROP = (0.0, 0.5, 1.0, 0.95)                    # crop to a landscape region around the lower katydid
 NAMES = {"gaussian_noise": "Gaussian noise", "gaussian_blur": "Gaussian blur", "motion_blur": "Motion blur",
          "brightness": "Brightness", "contrast": "Contrast", "fog": "Fog", "jpeg_compression": "JPEG", "rain": "Rain"}
-COL1 = 3.5  # IEEE column width (inches)
+COL1, COL2 = 3.5, 7.16  # IEEE column / page width (inches)
 
 plt.rcParams.update({"font.family": "serif", "font.serif": ["STIXGeneral", "DejaVu Serif"], "font.size": 7,
                      "savefig.dpi": 400})
@@ -85,6 +86,7 @@ def main():
     ap.add_argument("--severity", type=int, default=4)
     ap.add_argument("--crop", type=float, nargs=4, default=None, metavar=("X0", "Y0", "X1", "Y1"))
     ap.add_argument("--from-preview", action="store_true")
+    ap.add_argument("--rows", type=int, default=1, help="1: one full-width row (default, paper); 3: 3x3 at column width")
     args = ap.parse_args()
     protocol = load_protocol()
     if args.from_preview:
@@ -96,16 +98,25 @@ def main():
         panels = from_dataset(args.image or DEFAULT_IMAGE, args.dataset, args.severity, crop, protocol)
 
     h, w = panels[0][1].shape[:2]
-    fig, axes = plt.subplots(3, 3, figsize=(COL1, COL1 * h / w * 1.0 + 0.45))
+    rows = args.rows
+    cols = -(-len(panels) // rows)
+    width = COL2 if rows == 1 else COL1
+    tile_w = width / cols
+    fig, axes = plt.subplots(rows, cols, figsize=(width, rows * (tile_w * h / w + (0.32 if rows == 1 else 0.2))),
+                             squeeze=False)
     for ax, (c, img) in zip(axes.flat, panels):
         ax.imshow(img)
         ax.set_xticks([])
         ax.set_yticks([])
-        tag = "" if c == "Clean" else (" (seen)" if c in protocol["seen"] else " (unseen)")
-        ax.set_title(NAMES.get(c, c) + tag, fontsize=7, pad=2)
+        tag = "" if c == "Clean" else ("seen" if c in protocol["seen"] else "unseen")
+        title = NAMES.get(c, c) + (f"\n({tag})" if rows == 1 and tag else f" ({tag})" if tag else ("\n" if rows == 1 else ""))
+        ax.set_title(title, fontsize=6.5 if rows == 1 else 7, pad=2, linespacing=1.0)
         for s in ax.spines.values():
             s.set_linewidth(0.4)
-    fig.subplots_adjust(left=0.005, right=0.995, top=0.95, bottom=0.005, wspace=0.04, hspace=0.18)
+    for ax in list(axes.flat)[len(panels):]:
+        ax.axis("off")
+    fig.subplots_adjust(left=0.003, right=0.997, top=0.8 if rows == 1 else 0.95, bottom=0.01, wspace=0.04,
+                        hspace=0.18)
     out = REPO / "figures"
     for ext in ("pdf", "png"):
         fig.savefig(out / f"fig_corruptions.{ext}", bbox_inches="tight", pad_inches=0.01)
