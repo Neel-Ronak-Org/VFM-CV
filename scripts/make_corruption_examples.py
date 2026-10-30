@@ -1,6 +1,6 @@
 """Paper figure: one test image under each of the 8 corruptions at one severity (figures/fig_corruptions).
 
-    python scripts/make_corruption_examples.py                      # teaser image, severity 4 (needs the data)
+    python scripts/make_corruption_examples.py                      # teaser image (cropped), severity 4; needs the data
     python scripts/make_corruption_examples.py --severity 3 --crop 0.1 0.2 0.9 0.8
     python scripts/make_corruption_examples.py --image path/to/photo.jpg
     python scripts/make_corruption_examples.py --from-preview       # no data: tiles of figures/corruption_preview.jpg
@@ -27,7 +27,8 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 from src.corruptions import corrupt_for_benchmark, load_protocol  # noqa: E402
 
-DEFAULT_IMAGE = "COD10K-CAM-3-Flying-61-Katydid-4063"  # the teaser image (Fig. 1)
+DEFAULT_IMAGE = "COD10K-CAM-3-Flying-61-Katydid-4063"  # the teaser image (Fig. 1); portrait, so by default
+DEFAULT_CROP = (0.0, 0.5, 1.0, 0.95)                    # crop to a landscape region around the lower katydid
 NAMES = {"gaussian_noise": "Gaussian noise", "gaussian_blur": "Gaussian blur", "motion_blur": "Motion blur",
          "brightness": "Brightness", "contrast": "Contrast", "fog": "Fog", "jpeg_compression": "JPEG", "rain": "Rain"}
 COL1 = 3.5  # IEEE column width (inches)
@@ -91,7 +92,8 @@ def main():
     elif args.image and Path(args.image).is_file():
         panels = from_file(args.image, args.severity, args.crop, protocol)
     else:
-        panels = from_dataset(args.image or DEFAULT_IMAGE, args.dataset, args.severity, args.crop, protocol)
+        crop = args.crop if (args.crop or args.image) else DEFAULT_CROP
+        panels = from_dataset(args.image or DEFAULT_IMAGE, args.dataset, args.severity, crop, protocol)
 
     h, w = panels[0][1].shape[:2]
     fig, axes = plt.subplots(3, 3, figsize=(COL1, COL1 * h / w * 1.0 + 0.45))
