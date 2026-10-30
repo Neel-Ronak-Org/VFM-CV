@@ -1,4 +1,4 @@
-"""Phase 3: run the corruption benchmark plan in configs/benchmark.yaml (resumable).
+"""Run the corruption benchmark plan in configs/benchmark.yaml (resumable).
 
     python scripts/run_benchmark.py --status              # what's done, what's left, rough ETA
     python scripts/run_benchmark.py                       # run everything still missing

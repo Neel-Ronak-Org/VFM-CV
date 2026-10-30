@@ -1,4 +1,4 @@
-"""Phase 3 summary: clean score, mean under corruption (mCorr) and retention, per model x dataset.
+"""Benchmark summary: clean score, mean under corruption (mCorr) and retention, per model x dataset.
 
     python scripts/summarize_benchmark.py            # reads results/benchmark.csv -> results/summary_robustness.csv
 

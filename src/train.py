@@ -1,4 +1,4 @@
-"""Train our Robust Lightweight SAM Adapter (Phase 4).
+"""Train our Robust Lightweight SAM Adapter.
 
     python -m src.train --config configs/train/ours_full.yaml --profile 40     # speed + VRAM check only
     python -m src.train --config configs/train/ours_full.yaml                  # train
@@ -369,7 +369,7 @@ def _report_profile(cfg, spb, batches_per_epoch, peak, dev, params, log_root) ->
         total = torch.cuda.get_device_properties(0).total_memory / 2**20
         if peak > 0.9 * total:
             print(f"WARNING: peak {peak:.0f} MB is >90% of {total:.0f} MB; on Windows this can spill into shared "
-                  "memory and run many times slower. Step down the VRAM ladder (see docs/EXPLAINER.md section 9).")
+                  "memory and run many times slower. Step down the VRAM ladder (see docs/MODEL.md).")
     return row
 
 

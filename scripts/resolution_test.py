@@ -1,6 +1,6 @@
 """Resolution test: is our adapter less robust because it sees corruptions at 1024 px?
 
-Hypothesis (PROGRESS session 11): the 352-px baselines shrink each image ~2.8x, which averages away
+Hypothesis: the 352-px baselines shrink each image ~2.8x, which averages away
 noise / JPEG / rain and shrinks blur, while our model looks at ~full resolution. If so, giving OUR trained
 weights a low-resolution view (reduce to N x N, then back up; src/models/robust_adapter.py:low_res_view)
 should raise retention on the LOCAL corruptions and leave the GLOBAL ones (brightness, contrast, fog) alone,

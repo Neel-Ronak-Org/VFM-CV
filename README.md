@@ -1,94 +1,93 @@
-# Robust, Lightweight Foundation-Model Camouflaged Object Detection
+# How Robust Are Foundation-Model Camouflage Detectors?
 
-A corruption-robustness benchmark for camouflaged object detection (COD) that compares specialist COD models with SAM-based ones, plus a lightweight robust SAM adapter that runs on a 4 GB laptop GPU.
+Code, configurations and results for a corruption-robustness benchmark of camouflaged object detection (COD) models, and for a lightweight, prompt-free MobileSAM adapter that trains and runs on a 4 GB laptop GPU.
 
-> **Status:** baselines reproduced (Phase 2). Corruption benchmark running (Phase 3). Our adapter's code and training script plus the demo are ready (Phases 4 and 6). Every number this project reports comes from `results/*.csv`.
-
-- Project brief: [`CLAUDE.md`](CLAUDE.md)
-- Plan and doability assessment: [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md)
-- Novelty check: [`docs/NOVELTY_REPORT.md`](docs/NOVELTY_REPORT.md)
-- Plain-English explanations: [`docs/EXPLAINER.md`](docs/EXPLAINER.md)
-- Running log: [`PROGRESS.md`](PROGRESS.md)
+- **Benchmark:** specialist COD models (SINet-V2, PFNet, ZoomNet, FEDER) and SAM-based ones (SAM2-UNet, SAM-Adapter) on CHAMELEON, CAMO, COD10K and NC4K, clean and under 8 corruptions × 5 severities, with a held-out (seen / unseen) corruption split. Protocol: [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+- **Model:** a frozen MobileSAM TinyViT encoder with bottleneck adapters, learned prompts and a trained SAM mask decoder, trained with corruption augmentation and a clean/corrupted consistency loss. Details: [`docs/MODEL.md`](docs/MODEL.md).
+- **Results:** every number in the paper is computed from the CSV files in [`results/`](results/) by the scripts below; the paper's LaTeX tables are generated into [`results/tables/`](results/tables/).
 
 ## Setup
 
-Python 3.11 in a project-local virtual environment, managed with [uv](https://docs.astral.sh/uv/). uv downloads Python 3.11 for you; your system Python (e.g. 3.13) is left alone.
+Python 3.11 and PyTorch 2.6 with CUDA 12.4, installed with [uv](https://docs.astral.sh/uv/) (pip works too).
 
-**Windows (PowerShell), the student laptop:**
-```powershell
-# one-time: install uv
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-cd VFM-CV
+```bash
 uv venv --python 3.11 .venv
-.venv\Scripts\activate
+source .venv/bin/activate            # Windows PowerShell: .venv\Scripts\activate
 uv pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
 uv pip install -r requirements.txt
-python scripts/env_check.py          # must show "CUDA available: True" and torch 2.6.0+cu124
-python -m pytest -q                  # unit tests
+python scripts/env_check.py          # OS, Python, CUDA, GPU and VRAM
+python -m pytest -q                  # unit tests (metrics, corruptions, datasets, models, reporting)
 ```
-If PowerShell refuses to run `activate`, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
-**Linux / WSL2:** same, with `source .venv/bin/activate`.
-
-## Data
+## Data and weights
 
 ```bash
 python scripts/download_data.py --data      # COD10K+CAMO train, CHAMELEON/CAMO/COD10K/NC4K test
-python scripts/download_data.py --verify    # counts, pairing, mask checks -> results/data_check.csv
+python scripts/download_data.py --verify    # counts, pairing and mask checks -> results/data_check.csv
+python scripts/download_data.py --weights   # all required weights (or name some: --weights mobile_sam)
 ```
-If Google Drive blocks a download, the script prints the link and the path to save the file to. The datasets are not redistributed here; see each dataset's licence.
+Sources are listed in `configs/sources.yaml`. If Google Drive blocks a download, the script prints the link and where to save the file. Datasets and third-party weights are not redistributed here; their licences and citations are in [`docs/DATASETS.md`](docs/DATASETS.md).
 
-## Evaluate
+## Reproduce
 
+**Baselines on clean images** (reproduction check against the published numbers in `configs/reported.yaml`):
 ```bash
-# clean test sets
-python -m src.evaluate --models SINet-V2 --datasets CHAMELEON CAMO COD10K NC4K --corruptions clean
-# full corruption grid (8 corruptions x 5 severities), resumable
-python -m src.evaluate --models SINet-V2 --datasets COD10K --corruptions all
+python scripts/run_clean_baselines.py       # results/benchmark.csv, results/reproduction.csv
 ```
-Corruptions are generated on the fly with fixed per-image seeds (`configs/corruptions.yaml`), so results are bit-reproducible.
 
-## Train our adapter
-
+**Corruption benchmark** (resumable; corrupted images are generated on the fly with fixed per-image seeds):
 ```bash
-python -m src.train --config configs/train/ours_full.yaml --profile 40   # speed + VRAM check, saves nothing
-python -m src.train --config configs/train/ours_full.yaml                # train (Ours-Clean / Ours-Aug: ours_clean.yaml / ours_aug.yaml)
-python -m src.train --config configs/train/ours_full.yaml --resume       # continue after --max-hours, Ctrl+C or a crash
-python -m src.evaluate --models Ours-Full --datasets CHAMELEON --corruptions clean
+python scripts/run_benchmark.py             # plan in configs/benchmark.yaml; --status shows progress
+python -m src.evaluate --models SINet-V2 --datasets COD10K --corruptions all   # a single model
 ```
-Needs `checkpoints/mobile_sam/mobile_sam.pt` (`python scripts/download_data.py --weights mobile_sam`). Checkpoints go to `checkpoints/ours/<run>/`, logs to `results/train/<run>/`. See `docs/EXPLAINER.md` §9 for the design and the VRAM ladder.
+
+**Train our adapter** (needs `checkpoints/mobile_sam/mobile_sam.pt`):
+```bash
+python -m src.train --config configs/train/ours_full.yaml --profile 40   # speed and memory check only
+python -m src.train --config configs/train/ours_full.yaml                # Ours (1024)
+python -m src.train --config configs/train/ours_full_512.yaml            # Ours (512); seeds: _s1, _s2
+python -m src.train --config configs/train/ours_clean.yaml               # ablations: ours_aug, ours_full_*
+```
+Each run writes its config, git hash, loss curve and timings to `results/train/<run>/`.
+
+**Efficiency** (parameters, GFLOPs, latency, peak VRAM at batch size 1):
+```bash
+python -m src.profile --models SINet-V2 PFNet ZoomNet SAM2-UNet SAM-Adapter Ours-Full Ours-Full-512
+```
+
+**Tables and figures** (read only `results/*.csv`):
+```bash
+python scripts/summarize_benchmark.py   # results/summary_robustness.csv: mCorr, retention, mCE
+python scripts/significance.py          # results/significance.csv: paired bootstrap 95% CIs
+python scripts/make_tables.py           # results/tables/*.tex (LaTeX tables + numbers.tex macros)
+python scripts/make_figures.py          # figures/fig_{architecture,severity,tradeoff,resolution,heldout}
+python scripts/make_qualitative.py      # figures/fig_teaser, fig_qualitative (runs the models)
+python scripts/resolution_test.py       # input-resolution analysis -> results/resolution_test_<ds>.csv
+```
 
 ## Demo
 
 ```bash
-python demo/app.py                    # SINet-V2 vs our best trained adapter; opens in the browser
+python demo/app.py                    # Gradio app: upload a photo or pick a test image, add a corruption
 python demo/app.py --device cpu       # without a GPU
 ```
-Upload your own photo (drag & drop) or put photos in `demo/my_photos/`, then tick up to 6 models to compare side by side (baselines and every trained Ours variant; each loads the first time it is ticked). Presentation shot list: `docs/DEMO_SCRIPT.md`.
-
-## Resolution test (diagnostic)
-
-```bash
-python scripts/resolution_test.py                    # Ours-Full / Ours-Clean fed 352/512/768-px views, CHAMELEON
-python scripts/resolution_test.py --dataset COD10K
-```
-
-## Paper tables and figures
-
-Every number in the paper's tables and figures is generated from `results/*.csv`, never typed by hand:
-```bash
-python scripts/summarize_benchmark.py   # results/summary_robustness.csv
-python scripts/significance.py          # results/significance.csv (paired bootstrap CIs)
-python scripts/make_tables.py           # paper/tables/*.tex (the paper \input{}s these)
-python scripts/make_figures.py          # figures/fig_{architecture,severity,tradeoff,resolution,heldout}.pdf/.png
-python scripts/make_qualitative.py      # figures/fig_teaser + fig_qualitative (runs the models: laptop, ~3 min)
-```
+Choose up to six models, a corruption and a severity; the masks are shown side by side as overlays with each model's latency. For test images, the ground truth and per-image scores can be shown too.
 
 ## Repository layout
 
-See §3 of `CLAUDE.md`. `data/` and `checkpoints/` are gitignored; `results/*.csv` are committed and are the only source of numbers for the tables, figures and paper.
+```
+configs/      corruption protocol, benchmark plan, data and weight sources, training configs
+src/          datasets, corruptions, metrics, evaluation, training, profiling, model wrappers
+src/models/   one wrapper per model; third_party/ holds the vendored upstream code (own licences)
+scripts/      download, benchmark, summaries, significance tests, tables, figures, analysis
+demo/         Gradio demo
+results/      benchmark.csv, per-image scores, training logs, efficiency, significance, tables/
+figures/      generated figures
+docs/         benchmark protocol, model details, dataset licences and citations
+tests/        unit tests
+data/, checkpoints/   datasets and weights (not tracked)
+```
 
 ## Licence
 
-Code: MIT (added at release). The datasets and baseline weights keep their own licences.
+Our code is released under the MIT licence ([`LICENSE`](LICENSE)). Vendored code in `src/models/third_party/` keeps its original licence (each folder has its LICENSE). Datasets and pretrained weights are subject to their authors' terms (see `docs/DATASETS.md`).

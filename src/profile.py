@@ -3,7 +3,7 @@
     python -m src.profile --models SINet-V2 SAM-Adapter          # writes results/efficiency.csv
     python -m src.profile --models SAM-Adapter --runs 5          # quick check
 
-Protocol (Phase 5 / CLAUDE.md): batch size 1, each model's default precision (fp16 for the large
+Protocol: batch size 1, each model's default precision (fp16 for the large
 SAM-based models), inference mode, on the laptop GPU. Latency is END-TO-END `model.predict()` on a
 fixed 1024x768 RGB image (preprocessing + network + resize back), after warm-up runs, with CUDA
 synchronisation; FPS = 1000 / median latency. GFLOPs are counted once with torch's FlopCounterMode

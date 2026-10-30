@@ -1,4 +1,4 @@
-"""Phase 2: clean evaluation of every baseline whose weights are present, then the reproduction table.
+"""Clean evaluation of every baseline whose weights are present, then the reproduction table.
 
     python scripts/run_clean_baselines.py                    # all models, all 4 test sets
     python scripts/run_clean_baselines.py --models ZoomNet PFNet --datasets CHAMELEON

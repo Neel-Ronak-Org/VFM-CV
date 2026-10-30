@@ -8,7 +8,7 @@ Two sources:
    below are ours. Where the paper is silent we made the simplest standard choice
    (PIL for Gaussian blur / brightness / contrast / JPEG, OpenCV for the motion-blur
    filter, clipping to [0,255]). Rain has no numeric definition in the paper, so its
-   parameters are our own. See docs/EXPLAINER.md §2 for the full list of assumptions.
+   parameters are our own. See docs/BENCHMARK.md for the full list of assumptions.
 
 2. **ImageNet-C corruptions (optional extension)** via the `imagecorruptions` package
    (Michaelis et al. 2019, packaging Hendrycks & Dietterich 2019), with a compatibility
